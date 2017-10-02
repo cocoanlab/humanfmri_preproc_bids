@@ -59,19 +59,20 @@ end
 subject_dir = fullfile(study_imaging_dir, subject_code);
 
 % anat directory
-dicomdir{1} = fullfile(subject_dir, 'dicom', 'anat');
+dicomdir{1, 1} = fullfile(subject_dir, 'dicom');
+dicomdir{2, 1} = fullfile(subject_dir, 'dicom', 'anat');
 mkdir(dicomdir{1});
 
 % func directory
-j = 1;
+j = 2;
 for i = 1:numel(func_run_nums)
     j = j + 1;
-    dicomdir{j} = fullfile(subject_dir, 'dicom', sprintf('run%02d_task-%s', func_run_nums(i), tasks{i}));
+    dicomdir{j, 1} = fullfile(subject_dir, 'dicom', sprintf('func_run%02d_task-%s', func_run_nums(i), tasks{i}));
     mkdir(dicomdir{j});
 end
 
 % fmap directory
-dicomdir{j+1} = fullfile(subject_dir, 'dicom', 'fmap');
+dicomdir{j+1, 1} = fullfile(subject_dir, 'dicom', 'fmap');
 mkdir(dicomdir{j+1});
 
 PREPROC.subject_dir = subject_dir;

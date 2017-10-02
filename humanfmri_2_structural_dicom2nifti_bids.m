@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_2_structural_dicom2nifti_bids(PREPROC)
+function PREPROC = humanfmri_2_structural_dicom2nifti_bids(subject_dir)
 
 % This function saves the dicom files into nifti and jason files in the anat
 % image directory (subject_dir/anat). 
@@ -38,6 +38,8 @@ function PREPROC = humanfmri_2_structural_dicom2nifti_bids(PREPROC)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
+
 outdir = fullfile(PREPROC.subject_dir, 'anat');
 datdir = fullfile(PREPROC.subject_dir, 'dicom', 'anat');
 
@@ -45,12 +47,33 @@ if ~exist(outdir, 'dir')
     mkdir(outdir);
 end
 
-[~, h] = dicm2nii(filenames(fullfile(datdir, '*IMA')), outdir, 4);
-f = fields(h);
+dicom_imgs = filenames(fullfile(datdir, '*IMA')); % depth 1
+if isempty(dicom_imgs), dicom_imgs = filenames(fullfile(datdir, '*/*IMA')); end % depth 2
+if isempty(dicom_imgs), dicom_imgs = filenames(fullfile(datdir, '*/*/*IMA')); end % depth 3
+if isempty(dicom_imgs), error('Can''t find dicom files. Please check.'); end
 
-PREPROC.subject_dir = subject_dir;
-PREPROC.anat_files = {fullfile(outdir, [f{1} '.nii'])};
+dicm2nii(dicom_imgs, outdir, 4, 'save_json');
+out = load(fullfile(outdir, 'dcmHeaders.mat'));
+f = fields(out.h);
 
-save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
+info.source = f{1};
+[~, subj_id] = fileparts(PREPROC.subject_dir);
+info.target = ['sub-' subj_id '_T1w'];
+
+filetype = {'nii', 'json'};
+
+for i = 1:numel(filetype)
+    source_file = fullfile(outdir, [info.source '.' filetype{i}]);
+    target_file = fullfile(outdir, [info.target '.' filetype{i}]);
+    movefile(source_file, target_file);
+    
+    eval(['PREPROC.anat_' filetype{i} '_files = {''' target_file '''};']);
+end
+
+eval(['h = out.h.' info.source ';']);
+save(fullfile(outdir, 'anat_dcm_headers.mat'), 'h');
+delete(fullfile(outdir, 'dcmHeaders.mat'));
+
+save_load_PREPROC(PREPROC.subject_dir, 'save', PREPROC); % save PREPROC
 
 end

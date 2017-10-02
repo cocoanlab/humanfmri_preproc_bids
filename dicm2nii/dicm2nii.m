@@ -1,4 +1,4 @@
-function varargout = dicm2nii(src, niiFolder, fmt)
+function varargout = dicm2nii(src, niiFolder, fmt, varargin)
 % Convert dicom and more into nii or img/hdr files. 
 % 
 % DICM2NII(dcmSource, niiFolder, outFormat)
@@ -402,6 +402,18 @@ pf.use_parfor = getpref('dicm2nii_gui_para', 'use_parfor', true);
 pf.use_seriesUID = getpref('dicm2nii_gui_para', 'use_seriesUID', true);
 pf.lefthand = getpref('dicm2nii_gui_para', 'lefthand', true);
 
+%% Parsing out varargin (optional input) if there is any: added by Wani, 10/2/2017
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case 'save_json', pf.save_json = true;
+        end
+    end
+end
+
+%% 
+
 tic;
 unzip_cmd = '';
 if iscellstr(src) && numel(src)==1, src = src{1}; end
@@ -435,6 +447,9 @@ else
     error('Unknown dicom source.');
 end
 dcmFolder = fullfile(getfield(what(dcmFolder), 'path'));
+
+%% Parsing out varargin (optional input): Wani added: 
+
 
 %% Deal with niiFolder
 if ~isdir(niiFolder), mkdir(niiFolder); end
