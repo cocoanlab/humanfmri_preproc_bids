@@ -17,8 +17,10 @@ humanfmri_1_make_directories(subject_code, study_imaging_dir, 'func_run_nums', f
 
 humanfmri_2_structural_dicom2nifti_bids(subject_dir);
 
-%%
+%% 3. Dicom to nifti: functional
 humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n);
 
+%% 4. Dicom to nifti: fmap
 
+% need to work
 
