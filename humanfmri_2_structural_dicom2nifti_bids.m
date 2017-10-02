@@ -5,7 +5,7 @@ function PREPROC = humanfmri_2_structural_dicom2nifti_bids(subject_dir)
 %
 % :Usage:
 % ::
-%    PREPROC = humanfmri_2_structural_dicom2nifti_bids(PREPROC)
+%    PREPROC = humanfmri_2_structural_dicom2nifti_bids(subject_dir)
 %
 %
 % :Input:
@@ -18,6 +18,11 @@ function PREPROC = humanfmri_2_structural_dicom2nifti_bids(subject_dir)
 % :Output(PREPROC):
 %
 %   PREPROC.anat_files (in nifti)
+%
+% :Example:
+%  
+%   subject_dir = '/Users/clinpsywoo/Dropbox/projects/ongoing_projects/preproc_pipeline/CAPS2_preproc_test/Imaging/caps001';
+%   PREPROC = humanfmri_2_structural_dicom2nifti_bids(subject_dir)
 %
 % ..
 %     Author and copyright information:

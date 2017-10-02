@@ -5,10 +5,9 @@ function PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n
 %
 % :Usage:
 % ::
-%    PREPROC = humanfmri_functional_1_dicom2nifti(subject_dir, session_n, disdaq_n)
+%    PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n)
 %
 %    e.g. 
-%       session_num = 1;
 %       disdaq = 5;
 %       PREPROC = humanfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 %
@@ -57,7 +56,12 @@ for i = 1:numel(func_dirs)
     [~, func_names{i,1}] = fileparts(func_dirs{i});
 end
 
-t = table(func_names, disdaq_n)
+try
+    t = table(func_names, disdaq_n)
+catch 
+    t = table(func_names, disdaq_n')
+end
+
 s = input('Is the disdaq_n correct? (Y or N) ', 's');
 
 if strcmp(s, 'N') || strcmp(s, 'n')
