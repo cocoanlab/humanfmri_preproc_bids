@@ -57,23 +57,28 @@ for i = 1:numel(func_dirs)
     [~, func_names{i,1}] = fileparts(func_dirs{i});
 end
 
-t = table(func_names, disdaq_n);
+t = table(func_names, disdaq_n)
 s = input('Is the disdaq_n correct? (Y or N) ', 's');
 
-if strcmp(s, 'N')
+if strcmp(s, 'N') || strcmp(s, 'n')
     error('Please check the disdaq numbers, and run this again.');
 end
 
+% set the directory
+outdir = fullfile(subject_dir, 'func');
+if ~exist(outdir, 'dir'), mkdir(outdir); end
+
+outdisdaqdir = fullfile(subject_dir, 'func', 'disdaq');
+if ~exist(outdisdaqdir, 'dir'), mkdir(outdisdaqdir); end
+
+
 for i = 1:numel(func_dirs)
+    
+    disdaq = disdaq_n(i);
     
     str{1} = repmat('-', 1, 60); str{3} = str{1};
     str{2} = ['Working on ' func_names{i}];
     for j = 1:numel(str), disp(str{j}); end
-    
-    outdir = fullfile(subject_dir, 'func');
-    if ~exist(outdir, 'dir')
-        mkdir(outdir);
-    end
     
     % == Convert dicm2nii
     
@@ -90,62 +95,34 @@ for i = 1:numel(func_dirs)
     f = fields(out.h);
     
     % == 3d to 4d
-    
     cd(outdir);
-    % 3d_imgs = filenames([f{2} '*.nii']);
+    
+    nifti_3d = filenames([f{1} '*.nii']);
     
     disp('Saving disdaq_image...')
-    spm_file_merge(nifti_imgs(1:disdaq), fullfile(outdir, sprintf('disdaq_first_%02d_images.nii', disdaq)));
-    disp('Converting 3d images to 4d images...')
-    spm_file_merge(nifti_imgs((disdaq+1):end), output_4d_fnames);
+    spm_file_merge(nifti_3d(1:disdaq), fullfile(outdisdaqdir, sprintf('disdaq_first_%02d_imgs_%s.nii', disdaq, func_names{i}(6:end))));
     
-    delete(fullfile(outdir, [f{1} '*.nii']));
-    
-    PREPROC.func_files{session_num} = output_4d_fnames;
-    
-    
-    
-    info.source = f{1};
     [~, subj_id] = fileparts(PREPROC.subject_dir);
-    info.target = ['sub-' subj_id '_' func_names{8}(6:end)];
+    output_4d_fnames = fullfile(outdir, sprintf('sub-%s_%s_bold', subj_id, func_names{i}(6:end)));
     
-    filetype = {'nii', 'json'};
+    disp('Converting 3d images to 4d images...')
+    spm_file_merge(nifti_3d((disdaq+1):end), [output_4d_fnames '.nii']);
     
-    for j = 1:numel(filetype)
-        source_file = fullfile(outdir, [info.source '.' filetype{j}]);
-        target_file = fullfile(outdir, [info.target '.' filetype{j}]);
-        movefile(source_file, target_file);
-        
-        eval(['PREPROC.func_' filetype{i} '_files{i} = {''' target_file '''};']);
-    end
+    delete(fullfile(outdir, [f{1} '*nii']))
     
-    eval(['h = out.h.' info.source ';']);
-    save(fullfile(outdir, ['func_' func_names{8}(6:end) '_dcm_headers.mat']), 'h');
+    % == change the json file name and save PREPROC
+    movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
+    
+    PREPROC.func_nii_files{i} = filenames([output_4d_fnames '.nii']);
+    PREPROC.func_json_files{i} = filenames([output_4d_fnames '.json']);
+    
+    eval(['h = out.h.' f{1} ';']);
+    save([output_4d_fnames '_dcmheaders.mat'], 'h');
     delete(fullfile(outdir, 'dcmHeaders.mat'));
     
-    
-    
-    
-    
-    
-    
-    
-    dicm2nii(filenames(char(fullfile(datdir, '*IMA'))), outdir, 4);
-    f = fields(h);
-    
-    nifti_imgs = filenames(fullfile(outdir, [f{1} '*.nii']), 'absolute');
-    
-    a = fields(h);
-    
-    eval(['hh= h.' a{1} ';']);
-    output_4d_fnames = fullfile(outdir, sprintf('r%02d_%s_%s.nii', session_num, ...
-        hh.StudyDate, f{1}));
-    
-    % disdaq
-    
-    save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
-    disp('Done')
-    
 end
+
+save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
+disp('Done')
 
 end
