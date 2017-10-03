@@ -103,8 +103,10 @@ for i = 1:numel(func_dirs)
     
     nifti_3d = filenames([f{1} '*.nii']);
     
-    disp('Saving disdaq_image...')
-    spm_file_merge(nifti_3d(1:disdaq), fullfile(outdisdaqdir, sprintf('disdaq_first_%02d_imgs_%s.nii', disdaq, func_names{i}(6:end))));
+    if disdaq > 0
+        disp('Saving disdaq_image...')
+        spm_file_merge(nifti_3d(1:disdaq), fullfile(outdisdaqdir, sprintf('disdaq_first_%02d_imgs_%s.nii', disdaq, func_names{i}(6:end))));
+    end
     
     [~, subj_id] = fileparts(PREPROC.subject_dir);
     output_4d_fnames = fullfile(outdir, sprintf('sub-%s_%s_bold', subj_id, func_names{i}(6:end)));
@@ -117,8 +119,8 @@ for i = 1:numel(func_dirs)
     % == change the json file name and save PREPROC
     movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
     
-    PREPROC.func_nii_files{i} = filenames([output_4d_fnames '.nii']);
-    PREPROC.func_json_files{i} = filenames([output_4d_fnames '.json']);
+    PREPROC.func_nii_files{i} = filenames([output_4d_fnames '.nii'], 'char');
+    PREPROC.func_json_files{i} = filenames([output_4d_fnames '.json'], 'char');
     
     eval(['h = out.h.' f{1} ';']);
     save([output_4d_fnames '_dcmheaders.mat'], 'h');
