@@ -2372,6 +2372,9 @@ for i = 1:nFields
     elseif strcmp(nam, 'UnwarpDirection')
         nam = 'PhaseEncodingDirection';
         if val(1) == '-' || val(1) == '?', val = val([2 1]); end
+        if val(1)=='x', val(1) = 'i'; end
+        if val(1)=='y', val(1) = 'j'; end
+        if val(1)=='z', val(1) = 'k'; end
     elseif strcmp(nam, 'EffectiveEPIEchoSpacing')
         nam = 'EffectiveEchoSpacing';
         val = val / 1000;

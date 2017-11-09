@@ -9,7 +9,7 @@ function PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n
 %
 %    e.g. 
 %       disdaq = 5;
-%       PREPROC = humanfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
+%       PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, session_num, disdaq);
 %
 % :Input:
 % 
@@ -109,7 +109,7 @@ for i = 1:numel(func_dirs)
     end
     
     [~, subj_id] = fileparts(PREPROC.subject_dir);
-    output_4d_fnames = fullfile(outdir, sprintf('sub-%s_%s_bold', subj_id, func_names{i}(6:end)));
+    output_4d_fnames = fullfile(outdir, sprintf('sub-%s_%s', subj_id, func_names{i}(6:end)));
     
     disp('Converting 3d images to 4d images...')
     spm_file_merge(nifti_3d((disdaq+1):end), [output_4d_fnames '.nii']);
