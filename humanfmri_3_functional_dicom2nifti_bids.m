@@ -75,7 +75,7 @@ if ~exist(outdir, 'dir'), mkdir(outdir); end
 [imgdir, subject_id] = fileparts(subject_dir);
 studydir = fileparts(imgdir);
 
-outdisdaqdir = fullfile(studydir, 'disdaq', subject_id);
+outdisdaqdir = fullfile(studydir, 'disdaq_dcmheaders', subject_id);
 if ~exist(outdisdaqdir, 'dir'), mkdir(outdisdaqdir); end
 
 
@@ -113,6 +113,7 @@ for i = 1:numel(func_dirs)
     
     [~, subj_id] = fileparts(PREPROC.subject_dir);
     output_4d_fnames = fullfile(outdir, sprintf('sub-%s_%s', subj_id, func_names{i}(6:end)));
+    output_dcmheaders_fnames = fullfile(outdisdaqdir, sprintf('sub-%s_%s', subj_id, func_names{i}(6:end)));
     
     disp('Converting 3d images to 4d images...')
     spm_file_merge(nifti_3d((disdaq+1):end), [output_4d_fnames '.nii']);
@@ -126,7 +127,7 @@ for i = 1:numel(func_dirs)
     PREPROC.func_json_files{i} = filenames([output_4d_fnames '.json'], 'char');
     
     eval(['h = out.h.' f{1} ';']);
-    save([output_4d_fnames '_dcmheaders.mat'], 'h');
+    save([output_dcmheaders_fnames '_dcmheaders.mat'], 'h');
     delete(fullfile(outdir, 'dcmHeaders.mat'));
     
 end
