@@ -61,7 +61,7 @@ subject_dir = fullfile(study_imaging_dir, subject_code);
 % anat directory
 dicomdir{1, 1} = fullfile(subject_dir, 'dicom');
 dicomdir{2, 1} = fullfile(subject_dir, 'dicom', 'anat');
-mkdir(dicomdir{1});
+for i = 1:2, mkdir(dicomdir{i}); end
 
 % func directory
 j = 2;
