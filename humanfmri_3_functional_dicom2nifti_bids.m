@@ -72,7 +72,10 @@ end
 outdir = fullfile(subject_dir, 'func');
 if ~exist(outdir, 'dir'), mkdir(outdir); end
 
-outdisdaqdir = fullfile(subject_dir, 'func', 'disdaq');
+[imgdir, subject_id] = fileparts(subject_dir);
+studydir = fileparts(imgdir);
+
+outdisdaqdir = fullfile(studydir, 'disdaq', subject_id);
 if ~exist(outdisdaqdir, 'dir'), mkdir(outdisdaqdir); end
 
 
