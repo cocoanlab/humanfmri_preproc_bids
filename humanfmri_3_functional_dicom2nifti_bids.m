@@ -125,8 +125,13 @@ for i = 1:numel(func_dirs)
     % == change the json file name and save PREPROC
     movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
     
-    PREPROC.func_nii_files{i} = filenames([output_4d_fnames '.nii'], 'char');
-    PREPROC.func_json_files{i} = filenames([output_4d_fnames '.json'], 'char');
+    if contains(output_4d_fnames, '_bold')
+        PREPROC.func_bold_files{ceil(i/2)} = filenames([output_4d_fnames '.nii'], 'char');
+        PREPROC.func_bold_json_files{ceil(i/2)} = filenames([output_4d_fnames '.json'], 'char');
+    elseif contains(output_4d_fnames, '_sbref')
+        PREPROC.func_sbref_files{ceil(i/2)} = filenames([output_4d_fnames '.nii'], 'char');
+        PREPROC.func_sbref_json_files{ceil(i/2)} = filenames([output_4d_fnames '.json'], 'char');
+    end
     
     eval(['h = out.h.' f{1} ';']);
     save([output_dcmheaders_fnames '_dcmheaders.mat'], 'h');
