@@ -67,7 +67,11 @@ for i = 1:2, mkdir(dicomdir{i}); end
 j = 2;
 for i = 1:numel(func_run_nums)
     j = j + 1;
-    dicomdir{j, 1} = fullfile(subject_dir, 'dicom', sprintf('func_task-%s_run-%02d', tasks{i}, func_run_nums(i)));
+    dicomdir{j, 1} = fullfile(subject_dir, 'dicom', sprintf('func_task-%s_run-%02d_bold', tasks{i}, func_run_nums(i)));
+    mkdir(dicomdir{j});
+    
+    j = j + 1;
+    dicomdir{j, 1} = fullfile(subject_dir, 'dicom', sprintf('func_task-%s_run-%02d_sbref', tasks{i}, func_run_nums(i)));
     mkdir(dicomdir{j});
 end
 
