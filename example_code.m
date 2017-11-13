@@ -2,13 +2,13 @@ codedir = '/Users/clinpsywoo/github/humanfmri_preproc_bids';
 addpath(codedir);
 
 study_imaging_dir = '/Users/clinpsywoo/Dropbox/projects/ongoing_projects/preproc_pipeline/CAPS2_preproc_test/Imaging';
-subject_code = 'sub-caps002';
+subject_code = 'sub-caps003';
 subject_dir = fullfile(study_imaging_dir, subject_code);
 
-func_run_nums = [1 1 2 2 3 3 4 4];
+func_run_nums = [1 2 3 4];
 disdaq_n = [20 0 20 0 20 0 20 0];
 
-func_tasks = {'CAPS_bold', 'CAPS_sbref', 'QUIN_bold', 'QUIN_sbref', 'REST_bold', 'REST_sbref', 'ODOR_bold', 'ODOR_sbref'};
+func_tasks = {'CAPS', 'QUIN', 'REST', 'ODOR'};
 
 %% 1. Make directories
 

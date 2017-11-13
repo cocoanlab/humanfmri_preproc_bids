@@ -43,6 +43,11 @@ fmap_dir = filenames(fullfile(PREPROC.dicom_dirs{1}, 'fmap*'), 'char', 'absolute
 outdir = fullfile(subject_dir, 'fmap');
 if ~exist(outdir, 'dir'), mkdir(outdir); end
 
+[imgdir, subject_id] = fileparts(subject_dir);
+studydir = fileparts(imgdir);
+
+outdisdaqdir = fullfile(studydir, 'disdaq_dcmheaders', subject_id);
+
 cd(fmap_dir); 
 
 dicom_imgs = filenames('*/*IMA', 'absolute');
@@ -56,7 +61,7 @@ cd(outdir);
 nifti_3d = filenames([f{1} '*.nii']);
 
 [~, subj_id] = fileparts(PREPROC.subject_dir);
-output_4d_fnames = fullfile(outdir, sprintf('%s_dir_pa_epi', subj_id));
+output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_epi', subj_id));
     
 disp('Converting 3d images to 4d images...')
 spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
@@ -87,7 +92,9 @@ movefile(fullfile(outdir, [f{2} '.json']), [output_4d_fnames '.json']);
 PREPROC.fmap_nii_files = filenames('sub*dir*.nii', 'char');
     
 h = out.h;
-save([output_4d_fnames '_dcmheaders.mat'], 'h');
+
+output_dcmheaders_fnames = fullfile(outdisdaqdir, sprintf('%s_fmap', subj_id));
+save([output_dcmheaders_fnames '_dcmheaders.mat'], 'h');
 delete(fullfile(outdir, 'dcmHeaders.mat'));
    
 save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
