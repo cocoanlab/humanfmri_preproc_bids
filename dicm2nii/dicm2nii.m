@@ -404,10 +404,15 @@ pf.lefthand = getpref('dicm2nii_gui_para', 'lefthand', true);
 
 %% Parsing out varargin (optional input) if there is any: added by Wani, 10/2/2017
 
+addtask = false;
+
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             case 'save_json', pf.save_json = true;
+            case 'taskname'
+                addtask = true;
+                taskname = varargin{i+1};
         end
     end
 end
@@ -899,6 +904,7 @@ for i = 1:nRun
     [nii, h{i}{1}] = set_nii_header(nii, h{i}{1}, pf); % set most nii hdr
     h{i}{1}.NiftiCreator = converter;
     nii.ext = set_nii_ext(h{i}{1}, pf); % NIfTI extension
+    if addtask, h{i}{1}.TaskName = taskname; end
     if pf.save_json, save_json(h{i}{1}, fname); end
 
     % Save bval and bvec files after bvec perm/sign adjusted in set_nii_header
@@ -2356,7 +2362,7 @@ flds = {
   'Manufacturer' 'SoftwareVersion' 'MRAcquisitionType' ...
   'InstitutionName' 'InstitutionAddress' 'DeviceSerialNumber' ...
   'ScanningSequence' 'SequenceVariant' 'ScanOptions' 'SequenceName' ...
-  'TableHeight' 'DistanceSourceToPatient' 'DistanceSourceToDetector'};
+  'TableHeight' 'DistanceSourceToPatient' 'DistanceSourceToDetector', 'TaskName'};
 
 nFields = numel(flds);
 fid = fopen([fname '.json'], 'w'); % overwrite silently if exist
