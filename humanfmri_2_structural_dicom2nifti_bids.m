@@ -63,7 +63,7 @@ f = fields(out.h);
 
 info.source = f{1};
 [~, subj_id] = fileparts(PREPROC.subject_dir);
-info.target = ['sub-' subj_id '_T1w'];
+info.target = [subj_id '_T1w'];
 
 filetype = {'nii', 'json'};
 

@@ -56,7 +56,7 @@ cd(outdir);
 nifti_3d = filenames([f{1} '*.nii']);
 
 [~, subj_id] = fileparts(PREPROC.subject_dir);
-output_4d_fnames = fullfile(outdir, sprintf('sub-%s_dir_pa_epi', subj_id));
+output_4d_fnames = fullfile(outdir, sprintf('%s_dir_pa_epi', subj_id));
     
 disp('Converting 3d images to 4d images...')
 spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
@@ -74,7 +74,7 @@ f = fields(out.h);
 nifti_3d = filenames([f{2} '*.nii']);
 
 [~, subj_id] = fileparts(PREPROC.subject_dir);
-output_4d_fnames = fullfile(outdir, sprintf('sub-%s_dir_ap_epi', subj_id));
+output_4d_fnames = fullfile(outdir, sprintf('%s_dir_ap_epi', subj_id));
     
 disp('Converting 3d images to 4d images...')
 spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
