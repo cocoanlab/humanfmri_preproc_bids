@@ -81,7 +81,6 @@ mkdir(dicomdir{j+1});
 
 PREPROC.subject_dir = subject_dir;
 PREPROC.dicom_dirs = dicomdir;
-PREPROC.taskname = tasks;
 
 save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 

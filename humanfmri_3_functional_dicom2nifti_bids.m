@@ -97,7 +97,9 @@ for i = 1:numel(func_dirs)
         dicom_imgs = filenames('*IMA');
     end
         
-    dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', PREPROC.taskname{i});
+    taskname = func_dirs{1}(strfind(func_dirs{1}, 'func_task-')+10:strfind(func_dirs{1}, 'run-')-2);
+    
+    dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname);
     out = load(fullfile(outdir, 'dcmHeaders.mat'));
     f = fields(out.h);
     
