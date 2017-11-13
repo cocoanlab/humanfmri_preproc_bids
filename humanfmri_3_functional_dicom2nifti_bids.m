@@ -112,7 +112,7 @@ for i = 1:numel(func_dirs)
     end
     
     [~, subj_id] = fileparts(PREPROC.subject_dir);
-    output_4d_fnames = fullfile(outdir, sprintf('sub-%s_%s', subj_id, func_names{i}(6:end)));
+    output_4d_fnames = fullfile(outdir, sprintf('%s_%s', subj_id, func_names{i}(6:end)));
     output_dcmheaders_fnames = fullfile(outdisdaqdir, sprintf('sub-%s_%s', subj_id, func_names{i}(6:end)));
     
     disp('Converting 3d images to 4d images...')
