@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n)
+function PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_input)
 
 % This function saves the dicom files (subject_dir/dicoms/func/r**) into 
 % nifti files in the Functional image directory (subject_dir/func/sub-, e.g., r01). 
@@ -48,8 +48,13 @@ PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
 
 func_dirs = PREPROC.dicom_dirs(contains(PREPROC.dicom_dirs, 'func_'));
 
-if numel(disdaq_n) == 1
-    disdaq_n = repmat(disdaq_n, numel(func_dirs), 1);
+disdaq_n = zeros(size(func_dirs));
+
+if numel(disdaq_input) == 1
+    disdaq_n = repmat(disdaq_input, numel(func_dirs), 1);
+    disdaq_n(contains(func_dirs, '_sbref')) = 0;
+else
+    disdaq_n(contains(func_dirs, '_bold')) = disdaq_input;
 end
 
 for i = 1:numel(func_dirs)
