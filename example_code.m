@@ -5,10 +5,10 @@ addpath(codedir);
 
 study_imaging_dir = '/Users/clinpsywoo/Dropbox/projects/ongoing_projects/preproc_pipeline/CAPS2_preproc_test/Imaging';
 subject_code = 'sub-caps003';
-subject_dir = fullfile(study_imaging_dir, subject_code);
+subject_dir = fullfile(study_imaging_dir, 'raw', subject_code);
 
 func_run_nums = [1 2 3 4];
-disdaq_n = [20 0 20 0 20 0 20 0];
+disdaq_n = [20 20 20 20];
 
 func_tasks = {'CAPS', 'QUIN', 'REST', 'ODOR'};
 
@@ -28,4 +28,16 @@ humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n);
 
 humanfmri_4_fieldmap_dicom2nifti_bids(subject_dir);
 
+%% Done with bids
 
+%% HCP distortion correction
+
+humanfmri_5_distortion_correction(subject_dir);
+
+PREPROC = humanfmri_functional_2_implicitmask_savemean(subject_dir, 1:4);
+
+PREPROC = humanfmri_structural_2_coregistration(subject_dir);
+
+% humanfmri_structural_3_reorientation(subject_dir)
+
+PREPROC = humanfmri_structural_5_segment(subject_dir, 'woreorient')

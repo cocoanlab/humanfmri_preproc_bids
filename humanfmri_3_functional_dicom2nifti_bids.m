@@ -131,11 +131,11 @@ for i = 1:numel(func_dirs)
     movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
     
     if contains(output_4d_fnames, '_bold')
-        PREPROC.func_bold_files{ceil(i/2)} = filenames([output_4d_fnames '.nii'], 'char');
-        PREPROC.func_bold_json_files{ceil(i/2)} = filenames([output_4d_fnames '.json'], 'char');
+        PREPROC.func_bold_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
+        PREPROC.func_bold_json_files{ceil(i/2),1} = filenames([output_4d_fnames '.json'], 'char');
     elseif contains(output_4d_fnames, '_sbref')
-        PREPROC.func_sbref_files{ceil(i/2)} = filenames([output_4d_fnames '.nii'], 'char');
-        PREPROC.func_sbref_json_files{ceil(i/2)} = filenames([output_4d_fnames '.json'], 'char');
+        PREPROC.func_sbref_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
+        PREPROC.func_sbref_json_files{ceil(i/2),1} = filenames([output_4d_fnames '.json'], 'char');
     end
     
     eval(['h = out.h.' f{1} ';']);

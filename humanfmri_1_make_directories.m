@@ -56,7 +56,7 @@ for i = 1:length(varargin)
     end
 end
 
-subject_dir = fullfile(study_imaging_dir, subject_code);
+subject_dir = fullfile(study_imaging_dir, 'raw', subject_code);
 
 % anat directory
 dicomdir{1, 1} = fullfile(subject_dir, 'dicom');
@@ -79,6 +79,8 @@ end
 dicomdir{j+1, 1} = fullfile(subject_dir, 'dicom', 'fmap');
 mkdir(dicomdir{j+1});
 
+PREPROC.study_imaging_dir = study_imaging_dir;
+PREPROC.subject_code = subject_code;
 PREPROC.subject_dir = subject_dir;
 PREPROC.dicom_dirs = dicomdir;
 
