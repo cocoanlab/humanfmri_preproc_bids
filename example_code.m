@@ -1,4 +1,6 @@
-codedir = '/Users/clinpsywoo/github/humanfmri_preproc_bids';
+% codedir = '/Users/clinpsywoo/github/humanfmri_preproc_bids';
+% imac
+codedir = '/Users/clinpsywoo/Nas/Resource/github_nas/cocoanlab/humanfmri_preproc_bids';
 addpath(codedir);
 
 study_imaging_dir = '/Users/clinpsywoo/Dropbox/projects/ongoing_projects/preproc_pipeline/CAPS2_preproc_test/Imaging';

@@ -46,7 +46,7 @@ function PREPROC = humanfmri_3_functional_dicom2nifti_bids(subject_dir, disdaq_n
 
 PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
 
-func_dirs = filenames(fullfile(PREPROC.dicom_dirs{1}, 'func*'));
+func_dirs = PREPROC.dicom_dirs(contains(PREPROC.dicom_dirs, 'func_'));
 
 if numel(disdaq_n) == 1
     disdaq_n = repmat(disdaq_n, numel(func_dirs), 1);
