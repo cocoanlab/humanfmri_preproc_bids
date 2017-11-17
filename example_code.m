@@ -86,10 +86,15 @@ humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data);
 
 %% B-7. EPI Normalization
 
-humanfmri_b7_EPI_normalization(preproc_subject_dir)
+use_sbref = 1;
+humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref);
 
 %% B-8. Smoothing
 
-humanfmri_b8_smoothing(preproc_subject_dir)
+humanfmri_b8_smoothing(preproc_subject_dir);
+
+%% B-9. ICA-AROMA
+
+
 
 

@@ -14,12 +14,11 @@ function PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir, varargin)
 % - preproc_subject_dir     the subject directory for preprocessed data
 %                             (PREPROC.preproc_outputdir)
 %
+% ** this is still a working version. There might still be errors. 
 %
 % :Output(PREPROC):
 % :: 
-%     PREPROC.swrao_func_files
-%     PREPROC.smoothing_job 
-%     save 'swra_func_files.png' in qcdir
+%     save results in PREPROC.ica_aroma_dir
 %    
 % ..
 %     Author and copyright information:
@@ -90,58 +89,8 @@ for subj_i = 1:numel(preproc_subject_dir)
 
 end
 
+PREPROC.ica_aroma_dir = fullfile(PREPROC.preproc_func_dir, 'melodic.ica');
 
-
-
-
-
-
-% 
-% matlabbatch{9}.spm.spatial.smooth.data(1) = cfg_dep('Normalise: Write: Normalised Images (Subj 1)', substruct('.','val', '{}',{8}, '.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('()',{1}, '.','files'));
-%   matlabbatch{9}.spm.spatial.smooth.fwhm = [6 6 6];
-%   matlabbatch{9}.spm.spatial.smooth.dtype = 0;
-%   matlabbatch{9}.spm.spatial.smooth.im = 0;
-%   matlabbatch{9}.spm.spatial.smooth.prefix = 's';
-
-for subj_i = 1:numel(preproc_subject_dir)
-
-    subject_dir = preproc_subject_dir{subj_i};
-    [~,a] = fileparts(subject_dir);
-    print_header(['Smoothing: FWHM ' num2str(fwhm) 'mm'], a);
-
-    PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
-    
-    matlabbatch = {};
-    matlabbatch{1}.spm.spatial.smooth.prefix = 's';
-    matlabbatch{1}.spm.spatial.smooth.dtype = 0; % data type; 0 = same as before
-    matlabbatch{1}.spm.spatial.smooth.im = 0; % implicit mask; 0 = no
-    matlabbatch{1}.spm.spatial.smooth.fwhm = repmat(fwhm, 1, 3); % override whatever the defaults were with this
-    matlabbatch{1}.spm.spatial.smooth.data = PREPROC.wr_func_bold_files;
-    
-    % Save the job
-    PREPROC.smoothing_job = matlabbatch;
-    PREPROC.swr_func_bold_files = prepend_a_letter(PREPROC.wr_func_bold_files, ones(size(PREPROC.wr_func_bold_files)), 's');
-
-    save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
-
-    spm('defaults','fmri');
-    spm_jobman('initcfg');
-    spm_jobman('run', matlabbatch);
-
-    for run_i = 1:numel(PREPROC.swr_func_bold_files)
-        dat = fmri_data(PREPROC.swr_func_bold_files{run_i});
-        mdat = mean(dat);
-
-        [~, b] = fileparts(PREPROC.swr_func_bold_files{run_i });
-        mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
-        PREPROC.mean_swr_func_bold_files{run_i,1} = mdat.fullpath; % output
-        write(mdat);
-    end
-    
-    canlab_preproc_show_montage(PREPROC.mean_swr_func_bold_files);
-    drawnow;
-    
-    mean_swr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_swr_func_bold.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,mean_swr_func_bold_png);
+save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 
 end

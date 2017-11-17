@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir)
+function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref)
 
 % This function does normalization for the functional data.
 %
@@ -11,6 +11,8 @@ function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir)
 % 
 % - preproc_subject_dir     the subject directory for preprocessed data
 %                             (PREPROC.preproc_outputdir)
+% - use_sbref               1:use sbref image for the normalization
+%                           0:use the first functional image for the normalization
 %
 % :Output(PREPROC):
 % :: 
@@ -52,7 +54,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         
         clear matlabbatch;
 
-        matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {[PREPROC.r_func_bold_files{run_i} ',1']};
+        if use_sbref
+            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {PREPROC.dc_func_sbref_files{run_i}};
+        else 
+            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {[PREPROC.r_func_bold_files{run_i} ',1']};
+        end
         matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = PREPROC.r_func_bold_files(run_i);
         matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
         matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
