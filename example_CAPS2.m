@@ -1,13 +1,12 @@
 Resourcedir = '/Volumes/habenula/Resource';
-addpath(genpath(Resourcedir)); % Basic resource folder
+addpath(genpath(Resourcedir));
 Resourcermdir = '/Volumes/habenula/Resource/github_nas/cocoanlab';
-rmpath(genpath(Resourcermdir)); % This folder contains spm8 : Remove it.
-codedir = '/Users/jaejoong/Documents/github/humanfmri_preproc_bids';
-addpath(genpath(codedir));
+rmpath(genpath(Resourcermdir));
+addpath(genpath('/Users/jaejoong/Documents/github/humanfmri_preproc_bids'));
 
 basedir = '/Volumes/habenula/hbmnas/';
 datdir = fullfile(basedir, 'projects/CAPS_project/data');
-load(fullfile(datdir, 'CAPS2_dataset_171110.mat')); % Dataset : Subject info
+load(fullfile(datdir, 'CAPS2_dataset_171110.mat'));
 
 
 for sj_num = 1:numel(D.Subj_Level.id)
@@ -27,13 +26,11 @@ for sj_num = 1:numel(D.Subj_Level.id)
     func_tasks{orderlist(3)} = 'ODOR';
     func_tasks{orderlist(4)} = 'REST';
 
-    %% 1. Make directories
+    %% A-1. Make directories
 
     humanfmri_a1_make_directories(subject_code, study_imaging_dir, func_run_nums, func_tasks);
 
     %% (+) copy files
-    % You need to copy all the dicom files into the raw data folder.
-    % This section copy files into the raw data folder that was made above.
 
     temp_imgdir = '/Volumes/habenula/hbmnas/data/CAPS2/Imaging';
     imgdir = filenames(fullfile(temp_imgdir, ['CAPS2_' subject_codenum{2} '*']), 'char');
@@ -95,6 +92,18 @@ for sj_num = 1:numel(D.Subj_Level.id)
     end
 
     copyfile(anatdir{1}, t_anatdir{1});
+    
+    %% A-2. Dicom to nifti: structural
+    
+    humanfmri_a2_structural_dicom2nifti_bids(subject_code, study_imaging_dir);
+    
+    %% A-3. Dicom to nifti: functional
+    
+    humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_n, 'no_check');
+    
+    %% A-4. Dicom to nifti: fmap
+    
+    humanfmri_a4_fieldmap_dicom2nifti_bids(subject_code, study_imaging_dir);
     
     
     clearvars -except sj_num basedir datdir D

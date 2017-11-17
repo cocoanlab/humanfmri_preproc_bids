@@ -398,7 +398,7 @@ end
 
 pf.save_patientName = getpref('dicm2nii_gui_para', 'save_patientName', true);
 pf.save_json = getpref('dicm2nii_gui_para', 'save_json', false);
-pf.use_parfor = getpref('dicm2nii_gui_para', 'use_parfor', true);
+pf.use_parfor = false; %getpref('dicm2nii_gui_para', 'use_parfor', true); ::: cocoanlab preference : We don't use it.
 pf.use_seriesUID = getpref('dicm2nii_gui_para', 'use_seriesUID', true);
 pf.lefthand = getpref('dicm2nii_gui_para', 'lefthand', true);
 

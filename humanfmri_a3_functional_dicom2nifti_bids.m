@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input)
+function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input, varargin)
 
 % This function saves the dicom files (subject_dir/dicoms/func/r**) into 
 % nifti files in the Functional image directory (subject_dir/func/sub-, e.g., r01). 
@@ -47,7 +47,15 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-
+do_check = true;
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'no_check'}
+                do_check = false;
+        end
+    end
+end
 
 if ~iscell(subject_code)
     subject_codes{1} = subject_code;
@@ -88,10 +96,12 @@ for subj_i = 1:numel(subject_codes)
             t = table(func_names, disdaq_n')
         end
         
-        s = input('Is the disdaq_n correct? (Y or N) ', 's');
-        
-        if strcmp(s, 'N') || strcmp(s, 'n')
-            error('Please check the disdaq numbers, and run this again.');
+        if do_check
+            s = input('Is the disdaq_n correct? (Y or N) ', 's');
+
+            if strcmp(s, 'N') || strcmp(s, 'n')
+                error('Please check the disdaq numbers, and run this again.');
+            end
         end
     end
     
