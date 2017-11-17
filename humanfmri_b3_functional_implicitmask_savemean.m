@@ -17,15 +17,17 @@ function PREPROC = humanfmri_b3_functional_implicitmask_savemean(preproc_subject
 % :Output(PREPROC):
 % ::
 %    PREPROC.implicit_mask_file
-%    PREPROC.mean_before_preproc
-%
 %    saves implicit_mask.nii and mean_beforepreproc_sub-x_task-x_run-x_bold.nii 
+%
+%    PREPROC.mean_before_preproc
+%    saves qc_images/mean_before_preproc.png
+%
 %    PREPROC.preproc_func_dir
 %
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Apr 2017  Choong-Wan Woo
+%     Copyright (C) Nov 2017  Choong-Wan Woo
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -40,6 +42,7 @@ function PREPROC = humanfmri_b3_functional_implicitmask_savemean(preproc_subject
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
 
 for subj_i = 1:numel(preproc_subject_dir)
 
@@ -65,10 +68,17 @@ for subj_i = 1:numel(preproc_subject_dir)
         mdat = mean(dat);
         [~, b] = fileparts(func_bold_files{i});
         
-        mdat.fullpath = fullfile(PREPROC.preproc_func_dir, ['mean_beforepreproc_' b '.nii']);
+        mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_beforepreproc_' b '.nii']);
         PREPROC.mean_before_preproc{i,1} = mdat.fullpath;
         write(mdat);
     end
+    
+    % save mean_before_preproc images
+    canlab_preproc_show_montage(PREPROC.mean_before_preproc);
+    drawnow;
+    
+    mean_before_preproc_png = fullfile(PREPROC.qcdir, 'mean_before_preproc.png'); % Scott added some lines to actually save the spike images
+    saveas(gcf,mean_before_preproc_png);
     
     save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % save PREPROC
 

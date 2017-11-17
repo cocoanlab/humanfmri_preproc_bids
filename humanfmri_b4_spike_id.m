@@ -10,8 +10,8 @@ function PREPROC = humanfmri_b4_spike_id(preproc_subject_dir)
 %
 % :Input:
 % 
-%   - preproc_subject_dir     the subject directory for preprocessed data
-%                             (PREPROC.preproc_outputdir)
+% - preproc_subject_dir     the subject directory for preprocessed data
+%                           (PREPROC.preproc_outputdir)
 %
 %
 % :Output(PREPROC):
@@ -25,7 +25,7 @@ function PREPROC = humanfmri_b4_spike_id(preproc_subject_dir)
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Apr 2017  Choong-Wan Woo
+%     Copyright (C) Nov 2017  Choong-Wan Woo
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,8 @@ function PREPROC = humanfmri_b4_spike_id(preproc_subject_dir)
 %
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
+% ..
+
 
 
 for subj_i = 1:numel(preproc_subject_dir)
@@ -55,7 +56,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     if ~exist(PREPROC.qcdir, 'dir'), mkdir(PREPROC.qcdir); end
     
     %% DETECT OUTLIERS using canlab tools
-    for run_i = 1:numel(dc_func_bold_files)
+    for run_i = 1:numel(PREPROC.dc_func_bold_files)
         
         dat = fmri_data(PREPROC.dc_func_bold_files{run_i}, PREPROC.implicit_mask_file);
         dat.images_per_session = size(dat.dat,2);

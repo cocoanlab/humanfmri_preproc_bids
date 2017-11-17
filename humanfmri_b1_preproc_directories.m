@@ -23,7 +23,7 @@ function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, st
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Apr 2017  Choong-Wan Woo
+%     Copyright (C) Nov 2017  Choong-Wan Woo
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, st
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
 
 
 if ~iscell(subject_code)
@@ -58,7 +59,10 @@ for subj_i = 1:numel(subject_codes)
     if ~exist(PREPROC.preproc_outputdir, 'dir'), mkdir(PREPROC.preproc_outputdir); end
     
     PREPROC.preproc_func_dir = fullfile(PREPROC.preproc_outputdir, 'func');
-    if ~exist(PREPROC.preproc_func_dir, 'dir'), mkdir(PREPROC.preproc_outputdir); end
+    if ~exist(PREPROC.preproc_func_dir, 'dir'), mkdir(PREPROC.preproc_func_dir); end
+
+    PREPROC.preproc_mean_func_dir = fullfile(PREPROC.preproc_outputdir, 'mean_func');
+    if ~exist(PREPROC.preproc_mean_func_dir, 'dir'), mkdir(PREPROC.preproc_mean_func_dir); end
     
     PREPROC.preproc_anat_dir = fullfile(PREPROC.preproc_outputdir, 'anat');
     if ~exist(PREPROC.preproc_anat_dir, 'dir'), mkdir(PREPROC.preproc_anat_dir); end

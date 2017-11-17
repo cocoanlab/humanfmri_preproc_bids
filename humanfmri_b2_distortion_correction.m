@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b2_distortion_correction(preproc_subject_dir, epi_enc_dir)
+function PREPROC = humanfmri_b2_distortion_correction(preproc_subject_dir, epi_enc_dir, do_sbref)
 
 % This function applies the distortion correction using fsl's topup.
 %
@@ -18,6 +18,8 @@ function PREPROC = humanfmri_b2_distortion_correction(preproc_subject_dir, epi_e
 % - epi_enc_dir     EPI phase encoding direction: Now this works only for
 %                   A->P or P->A. Input should be 'ap' or 'pa'. See the
 %                   example above.
+% - do_sbref        1: Apply topup on sbref
+%                   0: Do not apply topup on sbref
 %
 % :Output:
 % ::
@@ -32,7 +34,7 @@ function PREPROC = humanfmri_b2_distortion_correction(preproc_subject_dir, epi_e
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Apr 2017  Choong-Wan Woo and Jaejoong Lee
+%     Copyright (C) Nov 2017  Choong-Wan Woo
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -47,6 +49,7 @@ function PREPROC = humanfmri_b2_distortion_correction(preproc_subject_dir, epi_e
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
 
 
 %% add fsl path 
@@ -112,7 +115,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.topup.topup_fieldout = topup_fieldout;
     PREPROC.topup.topup_unwarped = topup_unwarped;
     
-    % Applying topup
+    % Applying topup on BOLD files
     
     for i = 1:numel(PREPROC.func_bold_files)
         fprintf('\n- Applying topup on run %d/%d', i, numel(PREPROC.func_bold_files));
@@ -127,6 +130,42 @@ for subj_i = 1:numel(preproc_subject_dir)
         
         % unzip
         system(['gzip -d ' PREPROC.dc_func_bold_files{i} '.gz']);
+    end
+
+    if do_sbref
+        % Applying topup on SBREF files
+        
+        for i = 1:numel(PREPROC.func_sbref_files)
+            fprintf('\n- Applying topup on run %d/%d', i, numel(PREPROC.func_sbref_files));
+            input_dat = PREPROC.func_sbref_files{i};
+            [~, a] = fileparts(input_dat);
+            PREPROC.dc_func_sbref_files{i,1} = fullfile(PREPROC.preproc_func_dir, ['dc_' a '.nii']);
+            system(['applytopup --imain=', input_dat, ' --inindex=1 --topup=', topup_out, ' --datain=', dc_param, ...
+                ' --method=jac --interp=spline --out=', PREPROC.dc_func_sbref_files{i}]);
+            
+            % removing spline interpolation neg values by absolute
+            system(['fslmaths ', PREPROC.dc_func_sbref_files{i}, ' -abs ', PREPROC.dc_func_sbref_files{i}, ' -odt short']);
+            
+            % unzip
+            system(['gzip -d ' PREPROC.dc_func_sbref_files{i} '.gz']);
+
+            dc_sbrefdat = fmri_data(PREPROC.dc_func_sbref_files{i}, PREPROC.implicit_mask_file);
+            write(dc_sbrefdat);
+        end
+        
+        % save dc_sbref images
+        canlab_preproc_show_montage(PREPROC.dc_func_sbref_files);
+        drawnow;
+        
+        dc_func_sbref_png = fullfile(PREPROC.qcdir, 'dc_func_sbref_files.png'); % Scott added some lines to actually save the spike images
+        saveas(gcf,dc_func_sbref_png);
+
+        mdc_sbref = fmri_data(PREPROC.dc_func_sbref_files, PREPROC.implicit_mask_file);
+        mdc_sbref = mean(mdc_sbref);
+        mdc_sbref.fullpath = fullfile(PREPROC.preproc_mean_func_dir, 'mean_dc_sbref.nii');
+        write(mdc_sbref);
+
+        PREPROC.mean_dc_sbref = mdc_sbref.fullpath;
     end
     
     PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC);

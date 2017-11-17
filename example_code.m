@@ -12,6 +12,8 @@ disdaq_n = [20 20 20 20];
 
 func_tasks = {'CAPS', 'QUIN', 'REST', 'ODOR'};
 
+% preproc_subject_dir = fullfile(study_imaging_dir, 'preprocessed', subject_code);
+
 %% A. BIDS dicom to nifti =================================================
 
 %% A-1. Make directories
@@ -44,28 +46,50 @@ humanfmri_a4_fieldmap_dicom2nifti_bids(subject_code, study_imaging_dir);
 % 2. bids validation
 % 3. disdaq & visualization/qc (canlab) - snr, plot, spike_id (html) 
 % 4. motion correction (realignment) - (Inrialign??)
-% 5. EPI normalization  (EPI -> EPI mni)
+% 5. EPI normalization  (EPI -> TPM mni)
 % 6. Smoothing
 % 7. ICA-AROMA
-% 8. temporal filtering (hpf/bpf, etc.)
 % ----------
+
 
 %% B-1. Preproc directories
 
 preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, study_imaging_dir);
 
 
-%% B-1. HCP distortion correction
+%% B-2. HCP distortion correction
 
 epi_enc_dir = 'ap';
-humanfmri_b2_distortion_correction(preproc_subject_dir, epi_enc_dir)
+do_sbref = 1;
+humanfmri_b2_distortion_correction(preproc_subject_dir, epi_enc_dir, do_sbref);
 
-%%
+%% B-3. Implicit mask and save means
 
-PREPROC = humanfmri_functional_2_implicitmask_savemean(subject_dir, 1:4);
+humanfmri_b3_functional_implicitmask_savemean(preproc_subject_dir);
 
-PREPROC = humanfmri_structural_2_coregistration(subject_dir);
+%% B-4. Spike id
 
-% humanfmri_structural_3_reorientation(subject_dir)
+humanfmri_b4_spike_id(preproc_subject_dir);
 
-PREPROC = humanfmri_structural_5_segment(subject_dir, 'woreorient')
+%% B-5. Slice timing correction if needed: You can skip this if TR is short enough
+
+% tr = .46;
+% mbf = 8;
+% 
+% humanfmri_b5_slice_timing(preproc_subject_dir, tr, mbf);
+
+
+%% B-6. Motion correction
+
+use_st_corrected_data = 0;
+humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data);
+
+%% B-7. EPI Normalization
+
+humanfmri_b7_EPI_normalization(preproc_subject_dir)
+
+%% B-8. Smoothing
+
+humanfmri_b8_smoothing(preproc_subject_dir)
+
+

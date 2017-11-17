@@ -31,7 +31,7 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Apr 2017  Choong-Wan Woo
+%     Copyright (C) Nov 2017  Choong-Wan Woo
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
 
 
 if ~iscell(subject_code)
