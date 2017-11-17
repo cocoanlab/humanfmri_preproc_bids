@@ -18,7 +18,7 @@ func_tasks = {'CAPS', 'QUIN', 'REST', 'ODOR'};
 
 %% A-1. Make directories
 
-humanfmri_a1_make_directories(subject_code, study_imaging_dir, 'func_run_nums', func_run_nums,  'func_tasks', func_tasks);
+humanfmri_a1_make_directories(subject_code, study_imaging_dir, func_run_nums, func_tasks);
 
 %% A-2. Dicom to nifti: structural
 

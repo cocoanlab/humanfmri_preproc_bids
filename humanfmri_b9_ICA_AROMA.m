@@ -27,7 +27,7 @@ function PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir, varargin)
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Nov 2017  Choong-Wan Woo and Jaejoon Lee
+%     Copyright (C) Nov 2017  Choong-Wan Woo and Jaejoong Lee
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by

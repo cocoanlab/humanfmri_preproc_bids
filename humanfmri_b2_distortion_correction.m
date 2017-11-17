@@ -34,7 +34,7 @@ function PREPROC = humanfmri_b2_distortion_correction(preproc_subject_dir, epi_e
 % ..
 %     Author and copyright information:
 %
-%     Copyright (C) Nov 2017  Choong-Wan Woo
+%     Copyright (C) Nov 2017  Choong-Wan Woo and Jaejoong Lee
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
