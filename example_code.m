@@ -95,6 +95,11 @@ humanfmri_b8_smoothing(preproc_subject_dir);
 
 %% B-9. ICA-AROMA
 
+humanfmri_b9_ICA_AROMA(preproc_subject_dir);
+
+%% B-10. Move and clean files 
+
+humanfmri_b10_move_clean_files(preproc_subject_dir);
 
 
 

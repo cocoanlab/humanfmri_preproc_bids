@@ -5,7 +5,7 @@ function PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir, varargin)
 %
 % :Usage:
 % ::
-%    PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir)
+%    PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir, varargin)
 %
 %
 % :Input:
@@ -15,6 +15,10 @@ function PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir, varargin)
 %                             (PREPROC.preproc_outputdir)
 %
 % ** this is still a working version. There might still be errors. 
+%
+% :Optional Input:
+%    'ica_aroma_dir'
+%    'anaconda_dir'
 %
 % :Output(PREPROC):
 % :: 
