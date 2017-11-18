@@ -50,6 +50,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     subject_dir = preproc_subject_dir{subj_i};
     [~,a] = fileparts(subject_dir);
+    fprintf('\n');
     print_header('Saving implicit mask and mean functional images', a);
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
@@ -86,7 +87,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     if any(contains(fieldnames(PREPROC), 'dc_func_sbref_files'))
         
         % rewrite the sbref file using implicit mask file
-        for i = 1:numel(dc_func_sbref_files)
+        for i = 1:numel(PREPROC.dc_func_sbref_files)
             dc_sbrefdat = fmri_data(PREPROC.dc_func_sbref_files{i}, PREPROC.implicit_mask_file);
             write(dc_sbrefdat);
         end
