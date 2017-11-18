@@ -1,25 +1,24 @@
 function PREPROC = humanfmri_c1_move_clean_files(preproc_subject_dir)
 
-% This function moves the preprocessed functional files and gzip wrao
-% functional files.
+% This function gzip functional files except for swr and wr.
 %
 % :Usage:
 % :: 
-%      PREPROC = apfmri_functional_9_move_clean_files(subject_dir, session_num)
+%      PREPROC = humanfmri_c1_move_clean_files(preproc_subject_dir)
 %
 % :Optional Input:
 % ::
-%      'gzip_only'
-%      'move_only'
 %
 
 do_move = true;
 do_gzip = true;
-
+ica_aroma = true;
 
 for i = 1:numel(varargin)
     if ischar(varargin{i})
         switch varargin{i}
+            case {'no_ica_aroma'}
+                ica_aroma = false;
             case {'gzip_only'} % in seconds
                 do_move = false;
             case {'move_only'}
@@ -27,6 +26,18 @@ for i = 1:numel(varargin)
         end
     end
 end
+
+for subj_i = 1:numel(preproc_subject_dir)
+
+    subject_dir = preproc_subject_dir{subj_i};
+    [~,a] = fileparts(subject_dir);
+    print_header(['Move and gzip files', a);
+
+    PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
+
+    contains(filenames('*'), 'wr')
+    
+
 
 
 print_header('Move and gzip functional files', ' ');
