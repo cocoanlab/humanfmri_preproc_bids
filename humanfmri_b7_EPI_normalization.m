@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref)
+function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref, varargin)
 
 % This function does normalization for the functional data.
 %
@@ -13,6 +13,13 @@ function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref
 %                             (PREPROC.preproc_outputdir)
 % - use_sbref               1:use sbref image for the normalization
 %                           0:use the first functional image for the normalization
+%
+%
+% :Optional Input:
+%
+% - 'no_check_reg' : The default is to check regitration of the output
+%                    images. If you want to skip it, then use this option.
+%
 %
 % :Output(PREPROC):
 % :: 
@@ -40,7 +47,15 @@ function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
-
+do_check = true;
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'no_check_reg'}
+                do_check = false;
+        end
+    end
+end
 
 for subj_i = 1:numel(preproc_subject_dir)
 

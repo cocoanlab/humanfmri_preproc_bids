@@ -70,6 +70,9 @@ for subj_i = 1:numel(subject_codes)
     PREPROC.preproc_fmap_dir = fullfile(PREPROC.preproc_outputdir, 'fmap');
     if ~exist(PREPROC.preproc_fmap_dir, 'dir'), mkdir(PREPROC.preproc_fmap_dir); end
     
+    PREPROC.qcdir = fullfile(PREPROC.preproc_outputdir, 'qc_images');
+    if ~exist(PREPROC.qcdir, 'dir'), mkdir(PREPROC.qcdir); end
+    
     preproc_subject_dir{subj_i} = PREPROC.preproc_outputdir;
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % load PREPROC

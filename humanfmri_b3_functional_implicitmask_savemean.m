@@ -47,11 +47,12 @@ function PREPROC = humanfmri_b3_functional_implicitmask_savemean(preproc_subject
 
 
 for subj_i = 1:numel(preproc_subject_dir)
-
-    [~,a] = fileparts(preproc_subject_dir{subj_i});
+    
+    subject_dir = preproc_subject_dir{subj_i};
+    [~,a] = fileparts(subject_dir);
     print_header('Saving implicit mask and mean functional images', a);
     
-    PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'load'); % load PREPROC
+    PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
     if any(contains(fieldnames(PREPROC), 'dc_func_bold_files'))
         func_bold_files = PREPROC.dc_func_bold_files;

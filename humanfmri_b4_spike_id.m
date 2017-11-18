@@ -51,10 +51,6 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
-    PREPROC.qcdir = fullfile(subject_dir, 'qc_images');
-
-    if ~exist(PREPROC.qcdir, 'dir'), mkdir(PREPROC.qcdir); end
-    
     %% DETECT OUTLIERS using canlab tools
     for run_i = 1:numel(PREPROC.dc_func_bold_files)
         
