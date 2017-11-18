@@ -1,4 +1,4 @@
-function PREPROC = apfmri_functional_9_move_clean_files(subject_dir, session_num, varargin)
+function PREPROC = humanfmri_c1_move_clean_files(preproc_subject_dir)
 
 % This function moves the preprocessed functional files and gzip wrao
 % functional files.

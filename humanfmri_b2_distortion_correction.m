@@ -148,24 +148,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             
             % unzip
             system(['gzip -d ' PREPROC.dc_func_sbref_files{i} '.gz']);
-
-            dc_sbrefdat = fmri_data(PREPROC.dc_func_sbref_files{i}, PREPROC.implicit_mask_file);
-            write(dc_sbrefdat);
         end
-        
-        % save dc_sbref images
-        canlab_preproc_show_montage(PREPROC.dc_func_sbref_files);
-        drawnow;
-        
-        dc_func_sbref_png = fullfile(PREPROC.qcdir, 'dc_func_sbref_files.png'); % Scott added some lines to actually save the spike images
-        saveas(gcf,dc_func_sbref_png);
-
-        mdc_sbref = fmri_data(PREPROC.dc_func_sbref_files, PREPROC.implicit_mask_file);
-        mdc_sbref = mean(mdc_sbref);
-        mdc_sbref.fullpath = fullfile(PREPROC.preproc_mean_func_dir, 'mean_dc_sbref.nii');
-        write(mdc_sbref);
-
-        PREPROC.mean_dc_sbref = mdc_sbref.fullpath;
     end
     
     PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC);

@@ -18,11 +18,13 @@ function PREPROC = humanfmri_b3_functional_implicitmask_savemean(preproc_subject
 % ::
 %    PREPROC.implicit_mask_file
 %    saves implicit_mask.nii and mean_beforepreproc_sub-x_task-x_run-x_bold.nii 
+%                            and mean_dc_sbref.nii if there is dc_sbref
 %
 %    PREPROC.mean_before_preproc
 %    saves qc_images/mean_before_preproc.png
-%
-%    PREPROC.preproc_func_dir
+%          
+%    PREPROC.mean_dc_sbref (if there is dc_sbref)
+%    saves qc_images/dc_func_sbref_files.png 
 %
 % ..
 %     Author and copyright information:
@@ -80,8 +82,37 @@ for subj_i = 1:numel(preproc_subject_dir)
     mean_before_preproc_png = fullfile(PREPROC.qcdir, 'mean_before_preproc.png'); % Scott added some lines to actually save the spike images
     saveas(gcf,mean_before_preproc_png);
     
+    if any(contains(fieldnames(PREPROC), 'dc_func_sbref_files'))
+        
+        % rewrite the sbref file using implicit mask file
+        for i = 1:numel(dc_func_sbref_files)
+            dc_sbrefdat = fmri_data(PREPROC.dc_func_sbref_files{i}, PREPROC.implicit_mask_file);
+            write(dc_sbrefdat);
+        end
+        
+        canlab_preproc_show_montage(PREPROC.dc_func_sbref_files);
+        drawnow;
+        
+        dc_func_sbref_png = fullfile(PREPROC.qcdir, 'dc_func_sbref_files.png'); % Scott added some lines to actually save the spike images
+        saveas(gcf,dc_func_sbref_png);
+        
+        mdc_sbref = fmri_data(PREPROC.dc_func_sbref_files, PREPROC.implicit_mask_file);
+        mdc_sbref = mean(mdc_sbref);
+        mdc_sbref.fullpath = fullfile(PREPROC.preproc_mean_func_dir, 'mean_dc_sbref.nii');
+        write(mdc_sbref);
+
+        PREPROC.mean_dc_sbref = mdc_sbref.fullpath;
+    end
+    
     save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % save PREPROC
 
 end
+
+% save dc_sbref images
+        
+        
+        
+
+        
 
 end
