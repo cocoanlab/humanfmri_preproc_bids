@@ -9,7 +9,7 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 %
 %    e.g. 
 %       disdaq_input = 20; or disdaq_input = [20 20 20 20];
-%       PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input)
+%       humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input)
 %
 % :Input:
 % 
@@ -19,6 +19,21 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 %                      (e.g., study_imaging_dir = '/NAS/data/CAPS2/Imaging')
 % - disdaq_input    the number of images you want to discard (to allow for
 %                   image intensity stablization)
+%
+% :Optional Input:
+%
+% - 'no_check_disdaq':  The default is to check the disdaq number by asking
+%                       you if the numbers are correct. This would be
+%                       helpful for one subject, but when you make a loop
+%                       through all subjects, this might not be annoying.
+%                       So you can turn off the disdaq checking using this
+%                       option.
+%                       e.g. humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input, 'no_check_disdaq')
+%
+% - 'use_parfor':       The current default of dicm2nii is "do not use
+%                       parfor" (parallel processing). If you want to use
+%                       parfor, please use this option.
+%                       e.g. humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input, 'use_parfor')
 %
 % :Output(PREPROC):
 % ::
@@ -47,12 +62,16 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-do_check = true;
+check_disdaq = true;
+use_parfor = false;
+
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
-            case {'no_check'}
-                do_check = false;
+            case {'no_check_disdaq'}
+                check_disdaq = false;
+            case {'use_parfor'}
+                use_parfor = true;
         end
     end
 end
@@ -96,7 +115,7 @@ for subj_i = 1:numel(subject_codes)
             t = table(func_names, disdaq_n')
         end
         
-        if do_check
+        if check_disdaq
             s = input('Is the disdaq_n correct? (Y or N) ', 's');
 
             if strcmp(s, 'N') || strcmp(s, 'n')
@@ -137,7 +156,12 @@ for subj_i = 1:numel(subject_codes)
         
         taskname = func_dirs{1}(strfind(func_dirs{1}, 'func_task-')+10:strfind(func_dirs{1}, 'run-')-2);
         
-        dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname);
+        if use_parfor
+            dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname, 'use_parfor');
+        else
+            dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname);
+        end
+            
         out = load(fullfile(outdir, 'dcmHeaders.mat'));
         f = fields(out.h);
         
