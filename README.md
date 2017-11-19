@@ -42,7 +42,7 @@ example\_CAPS2.m (Jaejoong made it for his study)
 - The main target users of this toolbox are cocoan lab people, but we're sharing our codes publicly anyway because this tool could be helpful for other labs and people. If you see bugs or issues in our code, please feel free to let us know. We will do our best to resolve the issues, but cannot guarantee to solve all the issues (given that we are a small lab). If you can contribute to the code, that would also be great. Thanks!!
 
 <br> 
-**Main strengths of this toolbox:**
+Main strengths of this toolbox:
 
 - This toolbox works well with a large number of images (when we tested heudiconv and bidskit on our dataset a while ago, dcm2niix (in python) was failed because of the size of our data (2600 images per run), but dicm2nii.m works fine. 
 - This toolbox includes some useful steps from the CANlab preprocessing pipeline.
