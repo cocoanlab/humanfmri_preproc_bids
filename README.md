@@ -30,9 +30,9 @@ example\_CAPS2.m (Jaejoong made it for his study)
 
 ## Contributors (so far)
 
-[Choong-Wan (Wani) Woo](https://github.com/wanirepo) (cocoanlab, director) 
-[Jaejoong Lee](https://github.com/jaejoonglee92) (cocoanlab, grad student)
-[Catherine Cho](https://github.com/naturalcici) (cocoanlab, postdoc)
+- [Choong-Wan (Wani) Woo](https://github.com/wanirepo) (cocoanlab, director) 
+- [Jaejoong Lee](https://github.com/jaejoonglee92) (cocoanlab, grad student)
+- [Catherine Cho](https://github.com/naturalcici) (cocoanlab, postdoc)
 
 
 
