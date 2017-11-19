@@ -14,10 +14,11 @@ You can download this github repository using the following command line.
 
 ## Dependency
 
-1. Canlab Core [https://github.com/canlab/CanlabCore](https://github.com/canlab/CanlabCore)
-2. FSL [https://fsl.fmrib.ox.ac.uk](https://fsl.fmrib.ox.ac.uk)
-3. SPM12 [http://www.fil.ion.ucl.ac.uk/spm/software/spm12](http://www.fil.ion.ucl.ac.uk/spm/software/spm12)
-4. ICA-AROMA [https://github.com/rhr-pruim/ICA-AROMA](https://github.com/rhr-pruim/ICA-AROMA)
+1. Canlab Core: [https://github.com/canlab/CanlabCore](https://github.com/canlab/CanlabCore)
+2. dicm2nii.m: ([link](https://www.mathworks.com/matlabcentral/fileexchange/42997-dicom-to-nifti-converter--nifti-tool-and-viewer)): We modified the original toolbox a little bit to make the output data fully BIDS-compatible. For this reason, please use the dicm2nii toolbox in our repository (in /external), instead of the original one. 
+3. FSL: [https://fsl.fmrib.ox.ac.uk](https://fsl.fmrib.ox.ac.uk)
+4. SPM12: [http://www.fil.ion.ucl.ac.uk/spm/software/spm12](http://www.fil.ion.ucl.ac.uk/spm/software/spm12)
+5. ICA-AROMA: [https://github.com/rhr-pruim/ICA-AROMA](https://github.com/rhr-pruim/ICA-AROMA)
 
 ## Getting started
 
