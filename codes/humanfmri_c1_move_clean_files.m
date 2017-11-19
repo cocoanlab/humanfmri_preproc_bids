@@ -1,5 +1,8 @@
 function PREPROC = humanfmri_c1_move_clean_files(preproc_subject_dir)
 
+% ***Warning: this is not done yet. Don't use this. We are thinking not
+% including this function, which seems less useful.***
+%
 % This function gzip functional files except for swr and wr.
 %
 % :Usage:
