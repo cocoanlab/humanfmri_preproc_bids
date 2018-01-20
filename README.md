@@ -44,18 +44,20 @@ There are two example codes that might be helpful for you to start with.
 
 ## Notes
 
-<br>
-
 - This repository is not fully tested yet. At least, it works well in our computer environment and fmri data sqeuence and structure. However, it doesn't mean that this tool should work for your data and your computational environment. 
 - The main target users of this toolbox are cocoan lab people, but we're sharing our codes publicly anyway because this tool could be helpful for other labs and people. If you see bugs or issues in our code, please feel free to let us know. We will do our best to resolve the issues, but cannot guarantee to solve all the issues (given that we are a small lab). If you can contribute to the code, that would also be great. Thanks!!
 
-<br> 
-Main strengths of this toolbox:
+
+
+## Main strengths of this toolbox:
 
 - This toolbox works well with a large number of images (when we tested heudiconv and bidskit on our dataset a while ago, dcm2niix (in python) was failed because of the size of our data (2600 images per run), but dicm2nii.m works fine. 
 - This toolbox includes some useful steps from the CANlab preprocessing pipeline.
 - You can run distortion correction (using fsl's topup) and ICA-AROMA in matlab. We couldn’t test ICA-AROMA fully yet, but it seems running well. We couldn’t finish the testing because the current data were too big (2600 images per run) to run ICA on it. 
 - EPI norm: You can run direct EPI normalization to mni with our tool (see Calhoun et al, 2017, *Human Brain Mapping*). One thing I should note is that for the mni template, we’re using spm12's TPM.nii because we found it works much better than using old EPI.nii. You can also run T1 norm as well (it's default). 
 - Flexible slice timing: the current tools works for Multiband data, and also you can easily skip that part, if you want.
+- This toolbox saves many QC plots in /qc_images directory for each subject's directory. This automatically saves useful QC images and data in the directory so that you can actually look at the data. 
+
+![alt text](example_qc.png)
 
 
