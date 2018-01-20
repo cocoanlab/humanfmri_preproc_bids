@@ -76,40 +76,50 @@ for subj_i = 1:numel(preproc_subject_dir)
     [~,a] = fileparts(subject_dir);
     cd(subject_dir);
     
-    print_header('Normalization (realignment)', a);
-
+    print_header('Segmentation and Normalization ', a);
+    
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
+    %% Segmentation
+    
+    load(which('segment_job.mat'));
+    
     if do_epinorm
+    
         if use_sbref
-            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = PREPROC.dc_func_sbref_files(1);
+            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.dc_func_sbref_files{1};
         else
-            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {[PREPROC.r_func_bold_files{1} ',1']};
+            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = [PREPROC.r_func_bold_files{1} ',1'];
         end
+        
     elseif do_t1norm
-        matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {PREPROC.coreg_anat_file};
+    
+        matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.coreg_anat_file;
+    
     end
     
-    matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = PREPROC.r_func_bold_files;
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {which('TPM.nii')};
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.affreg = 'mni';
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = [0 0.001 0.5 0.05 0.2];
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.fwhm = 0;
-    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.samp = 3;
+    [b,c] = fileparts(matlabbatch{1}.spm.spatial.preproc.channel.vols{1});
+    deformation_nii = fullfile(b, ['y_' c '.nii']);
     
-    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.bb = [-78  -112   -70
-                                                                  78    76    85];
-    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.vox = [2 2 2];
-    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.interp = 4;
-    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.prefix = 'w';
+    matlabbatch{2}.spm.spatial.normalise.write.subj.def = {deformation_nii};
+    matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.r_func_bold_files;
+    
+    matlabbatch{2}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
+                                                              78    76    85];                                                      
+    matlabbatch{2}.spm.spatial.normalise.write.woptions.vox = [2 2 2];
+    matlabbatch{2}.spm.spatial.normalise.write.woptions.interp = 4;
+    matlabbatch{2}.spm.spatial.normalise.write.woptions.prefix = 'w';
     
     spm('defaults','fmri');
     spm_jobman('initcfg');
     spm_jobman('run', {matlabbatch});
 
     PREPROC.norm_job = matlabbatch;
+    PREPROC.deformation_file = deformation_nii;
+    for ii = 1:5
+        PREPROC.segmentation{ii} = fullfile(b, ['c' num2str(ii) c '.nii']);
+    end
+    PREPROC.segmentation{6} = fullfile(b, ['m' c '.nii']);
     PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.r_func_bold_files, ones(size(PREPROC.r_func_bold_files)), 'w');
     
     for run_i = 1:numel(PREPROC.wr_func_bold_files)
@@ -127,6 +137,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     mean_wr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_wr_func_bold.png'); % Scott added some lines to actually save the spike images
     saveas(gcf,mean_wr_func_bold_png);
+    
+    close all;
+    canlab_preproc_show_montage(PREPROC.segmentation);
+    drawnow;
+    
+    seg_png = fullfile(PREPROC.qcdir, 'segmentation.png'); % Scott added some lines to actually save the spike images
+    saveas(gcf,seg_png);
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 

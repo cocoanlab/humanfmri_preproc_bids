@@ -50,28 +50,27 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
+    [~, c] = fileparts(PREPROC.anat_nii_files{1});
+    copyfile(PREPROC.anat_nii_files{1}, PREPROC.preproc_anat_dir);
+    
+    PREPROC.coreg_anat_file = fullfile(PREPROC.preproc_anat_dir, [c '.nii']);
+    
     def = spm_get_defaults('coreg');
     
     if use_sbref
-        matlabbatch{1}.spm.spatial.coreg.estwrite.ref = PREPROC.dc_func_sbref_files(1);
+        matlabbatch{1}.spm.spatial.coreg.estimate.ref = PREPROC.dc_func_sbref_files(1);
     else
-        matlabbatch{1}.spm.spatial.coreg.estwrite.ref = {PREPROC.mean_r_func_bold_files};
+        matlabbatch{1}.spm.spatial.coreg.estimate.ref = {PREPROC.mean_r_func_bold_files};
     end
-    matlabbatch{1}.spm.spatial.coreg.estwrite.source = PREPROC.anat_nii_files;
-    matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions = def.estimate;
-    matlabbatch{1}.spm.spatial.coreg.estwrite.roptions = def.write;
+    
+    matlabbatch{1}.spm.spatial.coreg.estimate.source = {PREPROC.coreg_anat_file};
+    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions = def.estimate;
     
     PREPROC.coreg_job = matlabbatch{1};
     
     spm('defaults','fmri');
     spm_jobman('initcfg');
     spm_jobman('run', {matlabbatch});
-    
-    [b, c] = fileparts(PREPROC.anat_nii_files{1});
-    
-    movefile(fullfile(b, ['r' c '.nii']), PREPROC.preproc_anat_dir);
-    
-    PREPROC.coreg_anat_file = fullfile(PREPROC.preproc_anat_dir, ['r' c '.nii']);
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
     
