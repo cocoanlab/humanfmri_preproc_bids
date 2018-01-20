@@ -105,11 +105,11 @@ humanfmri_b8_normalization(preproc_subject_dir, use_sbref);
 
 %% B-10. Smoothing
 
-humanfmri_b8_smoothing(preproc_subject_dir);
+humanfmri_b9_smoothing(preproc_subject_dir);
 
 %% B-11. ICA-AROMA
 
-humanfmri_b9_ICA_AROMA(preproc_subject_dir);
+humanfmri_b10_ICA_AROMA(preproc_subject_dir);
 
 
 
