@@ -92,6 +92,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             write(dc_sbrefdat);
         end
         
+        % save sbref images
         canlab_preproc_show_montage(PREPROC.dc_func_sbref_files);
         drawnow;
         
@@ -110,11 +111,5 @@ for subj_i = 1:numel(preproc_subject_dir)
 
 end
 
-% save dc_sbref images
-        
-        
-        
-
-        
 
 end

@@ -26,6 +26,14 @@ There are two example codes that might be helpful for you to start with.
 - example\_code.m (Wani made it)
 - example\_CAPS2.m (Jaejoong made it for his study)
 
+## Option 1: T1 normalization
+ 
+![alt text](pipeline01.png)
+
+## Option 2: EPI normalization
+
+![alt text](pipeline02.png)
+
 
 ## Contributors (so far)
 

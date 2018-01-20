@@ -43,7 +43,7 @@ function PREPROC = humanfmri_b9_smoothing(preproc_subject_dir, varargin)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-fwhm = 6; % default fwhm
+fwhm = 5; % default fwhm
 
 for i = 1:numel(varargin)
     if ischar(varargin{i})
