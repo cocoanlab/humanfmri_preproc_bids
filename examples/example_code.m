@@ -85,22 +85,29 @@ humanfmri_b4_spike_id(preproc_subject_dir);
 % 
 % humanfmri_b5_slice_timing(preproc_subject_dir, tr, mbf);
 
-
 %% B-6. Motion correction
 
-use_st_corrected_data = 0;
-humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data);
+use_st_corrected_data = false;
+use_sbref = true;
+humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data, use_sbref);
 
-%% B-7. EPI Normalization
+
+%% B-7. coregistration (spm_check_registration.m)
+
+use_sbref = true;
+humanfmri_b7_coregistration(preproc_subject_dir, use_sbref);
+
+
+%% B-8-1. T1 Normalization
 
 use_sbref = 1;
-humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref);
+humanfmri_b8_normalization(preproc_subject_dir, use_sbref);
 
-%% B-8. Smoothing
+%% B-10. Smoothing
 
 humanfmri_b8_smoothing(preproc_subject_dir);
 
-%% B-9. ICA-AROMA
+%% B-11. ICA-AROMA
 
 humanfmri_b9_ICA_AROMA(preproc_subject_dir);
 

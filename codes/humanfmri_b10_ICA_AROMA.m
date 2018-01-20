@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b9_ICA_AROMA(preproc_subject_dir, varargin)
+function PREPROC = humanfmri_b10_ICA_AROMA(preproc_subject_dir, varargin)
 
 % This function runs ICA-AROMA using python.
 % (github: https://github.com/rhr-pruim/ICA-AROMA)

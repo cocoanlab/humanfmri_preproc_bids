@@ -1,10 +1,10 @@
-function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref, varargin)
+function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, varargin)
 
 % This function does normalization for the functional data.
 %
 % :Usage:
 % ::
-%    PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir)
+%    PREPROC = humanfmri_b8_normalization(preproc_subject_dir)
 %
 %
 % :Input:
@@ -19,7 +19,8 @@ function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref
 %
 % - 'no_check_reg' : The default is to check regitration of the output
 %                    images. If you want to skip it, then use this option.
-%
+% - 'T1norm' : do T1 norm (default)
+% - 'EPInorm' : do EPI norm (but not using EPI, but using TPM.nii)
 %
 % :Output(PREPROC):
 % :: 
@@ -47,12 +48,24 @@ function PREPROC = humanfmri_b7_EPI_normalization(preproc_subject_dir, use_sbref
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
+% default
 do_check = true;
+do_t1norm = true;
+do_epinorm = false;
+
+% options
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             case {'no_check_reg'}
                 do_check = false;
+            case {'T1norm'}
+                do_t1norm = true;
+                do_epinorm = false;
+            case {'EPInorm'}
+                do_t1norm = false;
+                do_epinorm = true;
         end
     end
 end
@@ -61,39 +74,40 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     subject_dir = preproc_subject_dir{subj_i};
     [~,a] = fileparts(subject_dir);
-    print_header('EPI normalization (realignment)', a);
+    cd(subject_dir);
+    
+    print_header('Normalization (realignment)', a);
 
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
-
-    for run_i = 1:numel(PREPROC.r_func_bold_files)
-        
-        clear matlabbatch;
-
+    
+    if do_epinorm
         if use_sbref
-            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {PREPROC.dc_func_sbref_files{run_i}};
-        else 
-            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {[PREPROC.r_func_bold_files{run_i} ',1']};
+            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = PREPROC.dc_func_sbref_files(1);
+        else
+            matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {[PREPROC.r_func_bold_files{1} ',1']};
         end
-        matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = PREPROC.r_func_bold_files(run_i);
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {which('TPM.nii')};
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.affreg = 'mni';
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = [0 0.001 0.5 0.05 0.2];
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.fwhm = 0;
-        matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.samp = 3;
-        
-        matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.bb = [-78  -112   -70
-                                                                      78    76    85];
-        matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.vox = [2 2 2];
-        matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.interp = 4;
-        matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.prefix = 'w';
-        
-        spm('defaults','fmri');
-        spm_jobman('initcfg');
-        spm_jobman('run', {matlabbatch});
-
+    elseif do_t1norm
+        matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {PREPROC.coreg_anat_file};
     end
+    
+    matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = PREPROC.r_func_bold_files;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {which('TPM.nii')};
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.affreg = 'mni';
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = [0 0.001 0.5 0.05 0.2];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.fwhm = 0;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.samp = 3;
+    
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.bb = [-78  -112   -70
+                                                                  78    76    85];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.vox = [2 2 2];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.interp = 4;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.prefix = 'w';
+    
+    spm('defaults','fmri');
+    spm_jobman('initcfg');
+    spm_jobman('run', {matlabbatch});
 
     PREPROC.norm_job = matlabbatch;
     PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.r_func_bold_files, ones(size(PREPROC.r_func_bold_files)), 'w');

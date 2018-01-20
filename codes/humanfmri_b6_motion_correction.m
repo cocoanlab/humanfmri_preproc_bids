@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data)
+function PREPROC = humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data, use_sbref)
 
 % This function does motion correction (realignment) on functional data.
 %
@@ -45,6 +45,8 @@ function PREPROC = humanfmri_b6_motion_correction(preproc_subject_dir, use_st_co
 for subj_i = 1:numel(preproc_subject_dir)
 
     subject_dir = preproc_subject_dir{subj_i};
+    cd(subject_dir);
+    
     [~,a] = fileparts(subject_dir);
     print_header('Motion correction (realignment)', a);
 
@@ -66,45 +68,98 @@ for subj_i = 1:numel(preproc_subject_dir)
         data = PREPROC.dc_func_bold_files;
     end
     
-    matlabbatch{1}.spm.spatial.realign.estwrite.data{1} = data;
-    
+    %% run realign for EACH run
+    % for run_i = 1:numel(data)
+    %
+    %   if use_sbref
+    %      data_run = [PREPROC.dc_func_sbref_files(run_i);data(run_i)];
+    %   end
+    %
+    %   matlabbatch{1}.spm.spatial.realign.estwrite.data{1} = data_run;
+    %
+    %   PREPROC.realign_job{run_i} = matlabbatch{1};
+    %
+    %   PREPROC.r_func_bold_files{run_i} = prepend_a_letter(data(run_i), ones(size(data(run_i))), 'r');
+    %
+    %   % RUN
+    %   spm('defaults','fmri');
+    %   spm_jobman('initcfg');
+    %   spm_jobman('run', {matlabbatch});
+    %
+    %   [d, f] = fileparts(PREPROC.dc_func_sbref_files{run_i});
+    %   PREPROC.mvmt_param_files{run_i} = fullfile(d, ['rp_' f '.txt']);
+    %   temp_mvmt = textread(PREPROC.mvmt_param_files{run_i});
+    %
+    %   PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(2:end,:); % remove sbref
+    %
+    % end
+
+    %% run realign ACROSS runs 
+    if use_sbref
+        data_all = [PREPROC.dc_func_sbref_files(1);data];
+    else
+        data_all = data;
+    end
+
+    matlabbatch{1}.spm.spatial.realign.estwrite.data{1} = data_all;
+
     PREPROC.realign_job = matlabbatch{1};
-    
+
     PREPROC.r_func_bold_files = prepend_a_letter(data, ones(size(data)), 'r');
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
-    
+
     %% RUN
-    
     spm('defaults','fmri');
     spm_jobman('initcfg');
     spm_jobman('run', {matlabbatch});
-    
+
     %% Save realignment parameter
     
-    [d, f] = fileparts(data{1});
+    if use_sbref
+        [d, f] = fileparts(PREPROC.dc_func_sbref_files{1});
+    else
+        [d, f] = fileparts(data{1});
+    end
+    
     PREPROC.mvmt_param_files = fullfile(d, ['rp_' f '.txt']);
     temp_mvmt = textread(PREPROC.mvmt_param_files);
-        
+    PREPROC.nuisance.all_mvmt = temp_mvmt(2:end); 
+
     for run_i = 1:numel(data)
+        
         images_per_session = numel(spm_vol(data{run_i}));
-        PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(1:images_per_session,:);
-        temp_mvmt(1:images_per_session,:) = [];
+        
+        if run_i == 1, kk = 2; else, kk = 1; end
+        PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(kk:(images_per_session+kk-1),:);
+        temp_mvmt(1:(images_per_session+kk-1),:) = [];
     end
     
     %% Save mean realigned file
 
-    for run_i = 1:numel(PREPROC.r_func_bold_files)
-        dat = fmri_data(char(PREPROC.r_func_bold_files{run_i }), PREPROC.implicit_mask_file);
-        mdat = mean(dat);
-        [~, b] = fileparts(PREPROC.r_func_bold_files{run_i });
-        
-        mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
-        PREPROC.mean_r_func_bold_files{run_i ,1} = mdat.fullpath;
-        write(mdat);
-    end
+    % for run_i = 1:numel(PREPROC.r_func_bold_files)
+    %   dat = fmri_data(char(PREPROC.r_func_bold_files{run_i }), PREPROC.implicit_mask_file);
+    %   mdat = mean(dat);
+    %   [~, b] = fileparts(PREPROC.r_func_bold_files{run_i });
+    %
+    %   mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
+    %   PREPROC.mean_r_func_bold_files_run{run_i ,1} = mdat.fullpath;
+    %   write(mdat);
+    % end
 
-    % save mean_r_func_bold_png
+    %% save mean image across all runs
+    dat = fmri_data(char(PREPROC.r_func_bold_files{:}), PREPROC.implicit_mask_file);
+    mdat = mean(dat);
+    
+    [~, b] = fileparts(PREPROC.r_func_bold_files{1});
+    b(strfind(b, '_run'):end) = [];
+    
+    mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
+    PREPROC.mean_r_func_bold_files = mdat.fullpath;
+    write(mdat);
+    
+    %% save mean_r_func_bold_png
+    
     canlab_preproc_show_montage(PREPROC.mean_r_func_bold_files);
     drawnow;
     

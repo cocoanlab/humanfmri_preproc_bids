@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b8_smoothing(preproc_subject_dir, varargin)
+function PREPROC = humanfmri_b9_smoothing(preproc_subject_dir, varargin)
 
 % This function does smoothing on the functional image for one run. 
 %
