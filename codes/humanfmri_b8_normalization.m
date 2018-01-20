@@ -119,7 +119,6 @@ for subj_i = 1:numel(preproc_subject_dir)
     for ii = 1:5
         PREPROC.segmentation{ii} = fullfile(b, ['c' num2str(ii) c '.nii']);
     end
-    PREPROC.segmentation{6} = fullfile(b, ['m' c '.nii']);
     PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.r_func_bold_files, ones(size(PREPROC.r_func_bold_files)), 'w');
     
     for run_i = 1:numel(PREPROC.wr_func_bold_files)
