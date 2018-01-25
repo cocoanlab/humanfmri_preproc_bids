@@ -142,14 +142,32 @@ for subj_i = 1:numel(preproc_subject_dir)
     drawnow;
     
     seg_png = fullfile(PREPROC.qcdir, 'segmentation.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,seg_png);
+    saveas(gcf,seg_png);    
+    
+    % warping anatomical image
+    clear matlabbatch;
+    
+    matlabbatch{1}.spm.spatial.normalise.write.subj.def = {deformation_nii};
+    matlabbatch{1}.spm.spatial.normalise.write.subj.resample = {PREPROC.coreg_anat_file};
+    
+    matlabbatch{1}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
+                                                              78    76    85];                                                      
+    matlabbatch{1}.spm.spatial.normalise.write.woptions.vox = [2 2 2];
+    matlabbatch{1}.spm.spatial.normalise.write.woptions.interp = 4;
+    matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'w';
+    
+    spm('defaults','fmri');
+    spm_jobman('initcfg');
+    spm_jobman('run', {matlabbatch});
+    
+    PREPROC.wcoreg_anat_file = prepend_a_letter({PREPROC.coreg_anat_file}, ones(size(PREPROC.r_func_bold_files)), 'w');
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 
 end
 
 if do_check
-    spm_check_registration(which('keuken_2014_enhanced_for_underlay.img'), PREPROC.mean_wr_func_bold_files{1});
+    spm_check_registration(which('keuken_2014_enhanced_for_underlay.img'), PREPROC.wcoreg_anat_file);
 end
 
 end
