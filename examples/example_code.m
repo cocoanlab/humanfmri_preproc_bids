@@ -96,12 +96,15 @@ humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data, use_s
 
 use_sbref = true;
 humanfmri_b7_coregistration(preproc_subject_dir, use_sbref);
-
+% no check registration
+% humanfmri_b7_coregistration(preproc_subject_dir, use_sbref, 'no_check_reg');
 
 %% B-8-1. T1 Normalization
 
 use_sbref = 1;
 humanfmri_b8_normalization(preproc_subject_dir, use_sbref);
+% no check registration
+% humanfmri_b8_normalization(preproc_subject_dir, use_sbref, 'no_check_reg');
 
 %% B-10. Smoothing
 

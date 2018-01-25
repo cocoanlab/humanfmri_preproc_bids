@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref)
+function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref, varargin)
 
 % This function does coregistration between anatomical T1 image and 
 % mean_ra_functional or sbref images (functional images after realigned).
@@ -15,6 +15,12 @@ function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref)
 % - use_sbref               true or false. 
 %                           if true, the first image of sbref will be used 
 %                           for coregistration
+%
+% :Optional input:
+%
+% - 'no_check_reg'          no check regisration. If you want to run all
+%                           the subject without any interaction, this will 
+%                           be helpful.
 %
 % :Output(PREPROC):
 % ::
@@ -39,6 +45,17 @@ function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
+do_check = true;
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'no_check_reg'}
+                do_check = false;
+        end
+    end
+end
 
 for subj_i = 1:numel(preproc_subject_dir)
 
@@ -75,9 +92,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
     
     if use_sbref
-        spm_check_registration(PREPROC.coreg_anat_file, PREPROC.dc_func_sbref_files{1});
+        if do_check
+            spm_check_registration(PREPROC.coreg_anat_file, PREPROC.dc_func_sbref_files{1});
+        end
     else
-        spm_check_registration(PREPROC.coreg_anat_file, PREPROC.mean_r_func_bold_files);
+        if do_check
+            spm_check_registration(PREPROC.coreg_anat_file, PREPROC.mean_r_func_bold_files);
+        end
     end
     
 end
