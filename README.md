@@ -57,6 +57,7 @@ There are two example codes that might be helpful for you to start with.
 - EPI norm: You can run direct EPI normalization to mni with our tool (see Calhoun et al, 2017, *Human Brain Mapping*). One thing I should note is that for the mni template, we’re using spm12's TPM.nii because we found it works much better than using old EPI.nii. You can also run T1 norm as well (it's default). 
 - Flexible slice timing: the current tools works for Multiband data, and also you can easily skip that part, if you want.
 - This toolbox saves many QC plots in /qc_images directory for each subject's directory. This automatically saves useful QC images and data in the directory so that you can actually look at the data. 
+- You can mask the T1 image before segmentation for lesion data (see 'lesion_mask' option for humanfmri_b8_normalization.m).
 
 ![alt text](example_qc.png)
 
