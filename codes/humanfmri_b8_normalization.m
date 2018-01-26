@@ -21,7 +21,7 @@ function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, va
 %                    images. If you want to skip it, then use this option.
 % - 'T1norm' : do T1 norm (default)
 % - 'EPInorm' : do EPI norm (but not using EPI, but using TPM.nii)
-% - 'mask' : do masking before segmentation -- can be used for lesion data
+% - 'lesion_mask' : do masking before segmentation -- can be used for lesion data
 %
 % :Output(PREPROC):
 % :: 
@@ -68,7 +68,7 @@ for i = 1:length(varargin)
             case {'EPInorm'}
                 do_t1norm = false;
                 do_epinorm = true;
-            case {'mask'}
+            case {'lesion_mask'}
                 use_mask = true;
                 mask = varargin{i+1};
         end
@@ -118,7 +118,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             PREPROC.masked_coreg_anat_file = dat.fullpath;
             
             matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.masked_coreg_anat_file;
-        end
+        else
             matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.coreg_anat_file;
         end
     
