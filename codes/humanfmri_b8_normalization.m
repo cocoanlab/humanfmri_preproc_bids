@@ -21,6 +21,7 @@ function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, va
 %                    images. If you want to skip it, then use this option.
 % - 'T1norm' : do T1 norm (default)
 % - 'EPInorm' : do EPI norm (but not using EPI, but using TPM.nii)
+% - 'mask' : do masking before segmentation -- can be used for lesion data
 %
 % :Output(PREPROC):
 % :: 
@@ -53,6 +54,7 @@ function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, va
 do_check = true;
 do_t1norm = true;
 do_epinorm = false;
+use_mask = false;
 
 % options
 for i = 1:length(varargin)
@@ -66,6 +68,9 @@ for i = 1:length(varargin)
             case {'EPInorm'}
                 do_t1norm = false;
                 do_epinorm = true;
+            case {'mask'}
+                use_mask = true;
+                mask = varargin{i+1};
         end
     end
 end
@@ -84,6 +89,10 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     load(which('segment_job.mat'));
     
+    for i = 1:6
+        matlabbatch{1}.spm.spatial.preproc.tissue(i).tpm{1} = [which('TPM.nii') ',' num2str(i)];
+    end
+    
     if do_epinorm
     
         if use_sbref
@@ -94,7 +103,24 @@ for subj_i = 1:numel(preproc_subject_dir)
         
     elseif do_t1norm
     
-        matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.coreg_anat_file;
+        if use_mask
+            dat = fmri_data(PREPROC.coreg_anat_file, PREPROC.coreg_anat_file);
+            
+            % smoothing the mask a little bit (with .5 mm FWHM kernel)
+            dat_mask = fmri_data(mask, PREPROC.coreg_anat_file);
+            dat_mask = preprocess(dat_mask, 'smooth', .5); % smoothing
+            dat.dat = dat.dat .* double(dat_mask.dat==0);
+            
+            [a, b] = fileparts(PREPROC.coreg_anat_file);
+            dat.fullpath = fullfile(a, ['masked_' b '.nii']);
+            write(dat);
+            
+            PREPROC.masked_coreg_anat_file = dat.fullpath;
+            
+            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.masked_coreg_anat_file;
+        end
+            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.coreg_anat_file;
+        end
     
     end
     
