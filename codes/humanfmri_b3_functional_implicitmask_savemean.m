@@ -78,11 +78,12 @@ for subj_i = 1:numel(preproc_subject_dir)
     end
     
     % save mean_before_preproc images
-    canlab_preproc_show_montage(PREPROC.mean_before_preproc);
+    mean_before_preproc_png = fullfile(PREPROC.qcdir, 'mean_before_preproc.png'); % Scott added some lines to actually save the spike images
+    canlab_preproc_show_montage(PREPROC.mean_before_preproc, mean_before_preproc_png);
     drawnow;
     
-    mean_before_preproc_png = fullfile(PREPROC.qcdir, 'mean_before_preproc.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,mean_before_preproc_png);
+    
+%     saveas(gcf,mean_before_preproc_png);
     
     if any(contains(fieldnames(PREPROC), 'dc_func_sbref_files'))
         
@@ -93,11 +94,9 @@ for subj_i = 1:numel(preproc_subject_dir)
         end
         
         % save sbref images
-        canlab_preproc_show_montage(PREPROC.dc_func_sbref_files);
-        drawnow;
-        
         dc_func_sbref_png = fullfile(PREPROC.qcdir, 'dc_func_sbref_files.png'); % Scott added some lines to actually save the spike images
-        saveas(gcf,dc_func_sbref_png);
+        canlab_preproc_show_montage(PREPROC.dc_func_sbref_files, dc_func_sbref_png);
+        drawnow;
         
         mdc_sbref = fmri_data(PREPROC.dc_func_sbref_files, PREPROC.implicit_mask_file);
         mdc_sbref = mean(mdc_sbref);

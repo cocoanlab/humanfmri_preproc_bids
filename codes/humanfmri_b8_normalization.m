@@ -157,18 +157,15 @@ for subj_i = 1:numel(preproc_subject_dir)
         write(mdat);
     end
     
-    canlab_preproc_show_montage(PREPROC.mean_wr_func_bold_files);
-    drawnow;
-    
     mean_wr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_wr_func_bold.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,mean_wr_func_bold_png);
+    canlab_preproc_show_montage(PREPROC.mean_wr_func_bold_files, mean_wr_func_bold_png);
+    drawnow;
     
     close all;
-    canlab_preproc_show_montage(PREPROC.segmentation);
-    drawnow;
     
     seg_png = fullfile(PREPROC.qcdir, 'segmentation.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,seg_png);    
+    canlab_preproc_show_montage(PREPROC.segmentation, seg_png);
+    drawnow;
     
     % warping anatomical image
     clear matlabbatch;
@@ -193,7 +190,7 @@ for subj_i = 1:numel(preproc_subject_dir)
 end
 
 if do_check
-    spm_check_registration(which('keuken_2014_enhanced_for_underlay.img'), PREPROC.wcoreg_anat_file);
+    spm_check_registration({which('keuken_2014_enhanced_for_underlay.img'), PREPROC.wcoreg_anat_file});
 end
 
 end

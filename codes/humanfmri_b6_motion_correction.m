@@ -125,7 +125,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.mvmt_param_files = fullfile(d, ['rp_' f '.txt']);
     temp_mvmt = textread(PREPROC.mvmt_param_files);
     PREPROC.nuisance.all_mvmt = temp_mvmt(2:end); 
-
+    
     for run_i = 1:numel(data)
         
         images_per_session = numel(spm_vol(data{run_i}));
@@ -133,6 +133,26 @@ for subj_i = 1:numel(preproc_subject_dir)
         if run_i == 1, kk = 2; else, kk = 1; end
         PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(kk:(images_per_session+kk-1),:);
         temp_mvmt(1:(images_per_session+kk-1),:) = [];
+        
+        % save plot
+        create_figure('mvmt', 2, 1)
+        subplot(2,1,1);
+        plot(PREPROC.nuisance.mvmt_covariates{run_i}(:,1:3));
+        legend('x', 'y', 'z');
+        
+        subplot(2,1,2);
+        plot(PREPROC.nuisance.mvmt_covariates{run_i}(:,4:6));
+        legend('pitch', 'roll', 'yaw');
+
+        sz = get(0, 'screensize'); % Wani added two lines to make this visible (but it depends on the size of the monitor)
+        set(gcf, 'Position', [sz(3)*.02 sz(4)*.05 sz(3) *.45 sz(4)*.85]);
+        drawnow;
+        
+        [~,a] = fileparts(PREPROC.dc_func_bold_files{run_i});
+        
+        mvmt_qcfile = fullfile(PREPROC.qcdir, ['qc_mvmt_' a '.png']); % Scott added some lines to actually save the spike images
+        saveas(gcf,mvmt_qcfile);
+        close all;
     end
     
     %% Save mean realigned file
@@ -160,11 +180,9 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     %% save mean_r_func_bold_png
     
-    canlab_preproc_show_montage(PREPROC.mean_r_func_bold_files);
-    drawnow;
-    
     mean_r_func_bold_png = fullfile(PREPROC.qcdir, 'mean_r_func_bold.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,mean_r_func_bold_png);
+    canlab_preproc_show_montage(PREPROC.mean_r_func_bold_files, mean_r_func_bold_png);
+    drawnow;
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 

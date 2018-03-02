@@ -89,10 +89,8 @@ for subj_i = 1:numel(preproc_subject_dir)
         write(mdat);
     end
     
-    canlab_preproc_show_montage(PREPROC.mean_swr_func_bold_files);
+    mean_swr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_swr_func_bold.png'); % Scott added some lines to actually save the spike images
+    canlab_preproc_show_montage(PREPROC.mean_swr_func_bold_files, mean_swr_func_bold_png);
     drawnow;
     
-    mean_swr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_swr_func_bold.png'); % Scott added some lines to actually save the spike images
-    saveas(gcf,mean_swr_func_bold_png);
-
 end
