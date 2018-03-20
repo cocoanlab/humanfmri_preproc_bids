@@ -1,11 +1,11 @@
-function PREPROC = humanfmri_b4_spike_id(preproc_subject_dir)
+function PREPROC = humanfmri_b3_spike_id(preproc_subject_dir)
 
 % This function detects outliers (spikes) based on Mahalanobis distance 
 % and rmssd.
 %
 % :Usage:
 % ::
-%    PREPROC = humanfmri_b4_spike_id(preproc_subject_dir)
+%    PREPROC = humanfmri_b3_spike_id(preproc_subject_dir)
 %
 %
 % :Input:
@@ -41,8 +41,6 @@ function PREPROC = humanfmri_b4_spike_id(preproc_subject_dir)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-
-
 for subj_i = 1:numel(preproc_subject_dir)
     
     subject_dir = preproc_subject_dir{subj_i};
@@ -52,12 +50,12 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
     %% DETECT OUTLIERS using canlab tools
-    for run_i = 1:numel(PREPROC.dc_func_bold_files)
+    for run_i = 1:numel(PREPROC.preproc_func_bold_files)
         
-        dat = fmri_data(PREPROC.dc_func_bold_files{run_i}, PREPROC.implicit_mask_file);
+        dat = fmri_data(PREPROC.preproc_func_bold_files{run_i}, PREPROC.implicit_mask_file);
         dat.images_per_session = size(dat.dat,2);
 
-        [~,a] = fileparts(PREPROC.dc_func_bold_files{run_i});
+        [~,a] = fileparts(PREPROC.preproc_func_bold_files{run_i});
     
         diary(fullfile(PREPROC.qcdir, ['qc_diary_' a '.txt']));
         dat = preprocess(dat, 'outliers', 'plot');  % Spike detect and globals by slice

@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b5_slice_timing(preproc_subject_dir, tr, mbf)
+function PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf)
 
 % This function does slice time correction for functional data. This is 
 % using "MosaicRefAcqTimes" information (the actual slice timing information) 
@@ -7,7 +7,7 @@ function PREPROC = humanfmri_b5_slice_timing(preproc_subject_dir, tr, mbf)
 %
 % :Usage:
 % ::
-%   PREPROC = humanfmri_b5_slice_timing(preproc_subject_dir, tr, mbf)
+%   PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf)
 %
 %
 % :Input:
@@ -22,7 +22,7 @@ function PREPROC = humanfmri_b5_slice_timing(preproc_subject_dir, tr, mbf)
 % ::
 %    PREPROC.slice_time
 %    PREPROC.slice_timing_job
-%    PREPROC.adc_func_bold_files
+%    PREPROC.a_func_bold_files
 %    PREPROC.TR
 %
 % ..
@@ -57,10 +57,10 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.slice_time = dicomheader.h.MosaicRefAcqTimes';
 
     %% DATA
-    slice_timing_job{1}.spm.temporal.st.scans{1} = PREPROC.dc_func_bold_files; % individual 3d images in cell str
+    slice_timing_job{1}.spm.temporal.st.scans{1} = PREPROC.preproc_func_bold_files; % individual 3d images in cell str
 
     %% 1. nslices
-    Vfirst_vol = spm_vol([PREPROC.dc_func_bold_files{1} ',1']);
+    Vfirst_vol = spm_vol([PREPROC.preproc_func_bold_files{1} ',1']);
     num_slices = Vfirst_vol(1).dim(3);
     slice_timing_job{1}.spm.temporal.st.nslices = num_slices; % number of slices
 
@@ -80,7 +80,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     %% Saving slice time correction job
     
     PREPROC.slice_timing_job = slice_timing_job{1};
-    PREPROC.adc_func_bold_files = prepend_a_letter(PREPROC.dc_func_bold_files, ones(size(PREPROC.dc_func_bold_files)), 'a');
+    PREPROC.a_func_bold_files = prepend_a_letter(PREPROC.preproc_func_bold_files, ones(size(PREPROC.preproc_func_bold_files)), 'a');
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
     

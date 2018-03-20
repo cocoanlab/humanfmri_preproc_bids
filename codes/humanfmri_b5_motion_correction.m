@@ -1,24 +1,24 @@
-function PREPROC = humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data, use_sbref)
+function PREPROC = humanfmri_b5_motion_correction(preproc_subject_dir, use_st_corrected_data, use_sbref)
 
 % This function does motion correction (realignment) on functional data.
 %
 % :Usage:
 % ::
-%      PREPROC = humanfmri_b6_motion_correction(preproc_subject_dir, use_st_corrected_data)
+%      PREPROC = humanfmri_b5_motion_correction(preproc_subject_dir, use_st_corrected_data)
 %
 %
 % :Input:
 % 
 % - preproc_subject_dir     the subject directory for preprocessed data
 %                             (PREPROC.preproc_outputdir)
-% - use_st_corrected_data   1: use adc_func_bold_files
-%                           0: use dc_func_bold_files 
+% - use_st_corrected_data   1: use a_func_bold_files
+%                           0: use preproc_func_bold_files 
 %                              (without slice timing correction)
 %
 % :Output(PREPROC):
 % ::
 %   PREPROC.realign_job
-%   PREPROC.rao_func_files
+%   PREPROC.r_func_bold_files
 %   PREPROC.mvmt_param_files
 %   PREPROC.nuisance.mvmt_covariates
 %   
@@ -63,40 +63,15 @@ for subj_i = 1:numel(preproc_subject_dir)
     matlabbatch{1}.spm.spatial.realign.estwrite.roptions.mask = 0; % do not mask (will set data to zero at edges!)
     
     if use_st_corrected_data
-        data = PREPROC.adc_func_bold_files;
+        data = PREPROC.a_func_bold_files;
     else
-        data = PREPROC.dc_func_bold_files;
+        data = PREPROC.preproc_func_bold_files;
     end
     
-    %% run realign for EACH run
-    % for run_i = 1:numel(data)
-    %
-    %   if use_sbref
-    %      data_run = [PREPROC.dc_func_sbref_files(run_i);data(run_i)];
-    %   end
-    %
-    %   matlabbatch{1}.spm.spatial.realign.estwrite.data{1} = data_run;
-    %
-    %   PREPROC.realign_job{run_i} = matlabbatch{1};
-    %
-    %   PREPROC.r_func_bold_files{run_i} = prepend_a_letter(data(run_i), ones(size(data(run_i))), 'r');
-    %
-    %   % RUN
-    %   spm('defaults','fmri');
-    %   spm_jobman('initcfg');
-    %   spm_jobman('run', {matlabbatch});
-    %
-    %   [d, f] = fileparts(PREPROC.dc_func_sbref_files{run_i});
-    %   PREPROC.mvmt_param_files{run_i} = fullfile(d, ['rp_' f '.txt']);
-    %   temp_mvmt = textread(PREPROC.mvmt_param_files{run_i});
-    %
-    %   PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(2:end,:); % remove sbref
-    %
-    % end
 
     %% run realign ACROSS runs 
     if use_sbref
-        data_all = [PREPROC.dc_func_sbref_files(1);data];
+        data_all = [PREPROC.preproc_func_sbref_files(1);data];
     else
         data_all = data;
     end
@@ -117,7 +92,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     %% Save realignment parameter
     
     if use_sbref
-        [d, f] = fileparts(PREPROC.dc_func_sbref_files{1});
+        [d, f] = fileparts(PREPROC.preproc_func_sbref_files{1});
     else
         [d, f] = fileparts(data{1});
     end
@@ -148,7 +123,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         set(gcf, 'Position', [sz(3)*.02 sz(4)*.05 sz(3) *.45 sz(4)*.85]);
         drawnow;
         
-        [~,a] = fileparts(PREPROC.dc_func_bold_files{run_i});
+        [~,a] = fileparts(PREPROC.preproc_func_bold_files{run_i});
         
         mvmt_qcfile = fullfile(PREPROC.qcdir, ['qc_mvmt_' a '.png']); % Scott added some lines to actually save the spike images
         saveas(gcf,mvmt_qcfile);

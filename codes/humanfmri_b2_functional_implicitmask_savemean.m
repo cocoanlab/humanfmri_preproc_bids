@@ -1,13 +1,13 @@
-function PREPROC = humanfmri_b3_functional_implicitmask_savemean(preproc_subject_dir)
+function PREPROC = humanfmri_b2_functional_implicitmask_savemean(preproc_subject_dir)
 
 % This function creates and saves implicit mask (top 95% of voxels above
 % the mean value) and mean functional images (before any preprocessing) in 
-% the preproc subject direcotry. The mean functional images can be used for 
+% the preproc subject directory. The mean functional images can be used for 
 % coregistration. 
 %
 % :Usage:
 % ::
-%        humanfmri_b3_functional_implicitmask_savemean(preproc_subject_dir)
+%        humanfmri_b2_functional_implicitmask_savemean(preproc_subject_dir)
 %
 % :Input:
 % ::
@@ -23,8 +23,7 @@ function PREPROC = humanfmri_b3_functional_implicitmask_savemean(preproc_subject
 %    PREPROC.mean_before_preproc
 %    saves qc_images/mean_before_preproc.png
 %          
-%    PREPROC.mean_dc_sbref (if there is dc_sbref)
-%    saves qc_images/dc_func_sbref_files.png 
+%    saves qc_images/func_sbref_files.png 
 %
 % ..
 %     Author and copyright information:
@@ -55,11 +54,23 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
-    if any(contains(fieldnames(PREPROC), 'dc_func_bold_files'))
-        func_bold_files = PREPROC.dc_func_bold_files;
-    else
-        func_bold_files = PREPROC.func_bold_files;
+    %if any(contains(fieldnames(PREPROC), 'dc_func_bold_files')) % move dc into after motion correction
+    %    func_bold_files = PREPROC.dc_func_bold_files;
+    %else
+    
+    copyfile([fileparts(PREPROC.func_bold_files{1}) '/*'], PREPROC.preproc_func_dir)
+    
+    for i = 1:numel(PREPROC.func_bold_files)
+        [~,b] = fileparts(PREPROC.func_bold_files{i});
+        PREPROC.preproc_func_bold_files{i,1} = fullfile(PREPROC.preproc_func_dir, [b '.nii']);
+        if any(contains(fieldnames(PREPROC), 'func_sbref_files'))
+            [~,c] = fileparts(PREPROC.func_sbref_files{i});
+            PREPROC.preproc_func_sbref_files{i,1} = fullfile(PREPROC.preproc_func_dir, [c '.nii']);
+        end
     end
+    
+    func_bold_files = PREPROC.preproc_func_bold_files;
+    %end
     
     [~, ~, ~, ~, outputname] = fmri_mask_thresh_canlab(char(func_bold_files),...
         fullfile(PREPROC.preproc_outputdir, 'implicit_mask.nii'));
@@ -68,7 +79,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.implicit_mask_file = outputname;
     
     for i = 1:numel(func_bold_files)
-        dat = fmri_data(char(func_bold_files{i}), PREPROC.implicit_mask_file);
+        dat = fmri_data(char(func_bold_files{i}), char(func_bold_files{i}));
         mdat = mean(dat);
         [~, b] = fileparts(func_bold_files{i});
         
@@ -82,33 +93,23 @@ for subj_i = 1:numel(preproc_subject_dir)
     canlab_preproc_show_montage(PREPROC.mean_before_preproc, mean_before_preproc_png);
     drawnow;
     
-    
-%     saveas(gcf,mean_before_preproc_png);
-    
-    if any(contains(fieldnames(PREPROC), 'dc_func_sbref_files'))
+    if any(contains(fieldnames(PREPROC), 'preproc_func_sbref_files'))
         
         % rewrite the sbref file using implicit mask file
-        for i = 1:numel(PREPROC.dc_func_sbref_files)
-            dc_sbrefdat = fmri_data(PREPROC.dc_func_sbref_files{i}, PREPROC.implicit_mask_file);
-            write(dc_sbrefdat);
+        for i = 1:numel(PREPROC.preproc_func_sbref_files)
+            sbrefdat = fmri_data(PREPROC.preproc_func_sbref_files{i}, PREPROC.implicit_mask_file);
+            write(sbrefdat);
         end
         
         % save sbref images
-        dc_func_sbref_png = fullfile(PREPROC.qcdir, 'dc_func_sbref_files.png'); % Scott added some lines to actually save the spike images
-        canlab_preproc_show_montage(PREPROC.dc_func_sbref_files, dc_func_sbref_png);
+        func_sbref_png = fullfile(PREPROC.qcdir, 'func_sbref_files.png'); % Scott added some lines to actually save the spike images
+        canlab_preproc_show_montage(PREPROC.preproc_func_sbref_files, func_sbref_png);
         drawnow;
         
-        mdc_sbref = fmri_data(PREPROC.dc_func_sbref_files, PREPROC.implicit_mask_file);
-        mdc_sbref = mean(mdc_sbref);
-        mdc_sbref.fullpath = fullfile(PREPROC.preproc_mean_func_dir, 'mean_dc_sbref.nii');
-        write(mdc_sbref);
-
-        PREPROC.mean_dc_sbref = mdc_sbref.fullpath;
     end
     
     save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % save PREPROC
 
 end
-
 
 end

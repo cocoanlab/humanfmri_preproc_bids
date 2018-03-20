@@ -98,7 +98,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         if use_sbref
             matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.dc_func_sbref_files{1};
         else
-            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = [PREPROC.r_func_bold_files{1} ',1'];
+            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = [PREPROC.dcr_func_bold_files{1} ',1'];
         end
         
     elseif do_t1norm
@@ -128,7 +128,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     deformation_nii = fullfile(b, ['y_' c '.nii']);
     
     matlabbatch{2}.spm.spatial.normalise.write.subj.def = {deformation_nii};
-    matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.r_func_bold_files;
+    matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.dcr_func_bold_files;
     
     matlabbatch{2}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
                                                               78    76    85];                                                      
@@ -145,7 +145,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     for ii = 1:5
         PREPROC.segmentation{ii} = fullfile(b, ['c' num2str(ii) c '.nii']);
     end
-    PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.r_func_bold_files, ones(size(PREPROC.r_func_bold_files)), 'w');
+    PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.dcr_func_bold_files, ones(size(PREPROC.dcr_func_bold_files)), 'w');
     
     for run_i = 1:numel(PREPROC.wr_func_bold_files)
         dat = fmri_data(PREPROC.wr_func_bold_files{run_i});
@@ -183,14 +183,14 @@ for subj_i = 1:numel(preproc_subject_dir)
     spm_jobman('initcfg');
     spm_jobman('run', {matlabbatch});
     
-    PREPROC.wcoreg_anat_file = prepend_a_letter({PREPROC.coreg_anat_file}, ones(size(PREPROC.r_func_bold_files)), 'w');
+    PREPROC.wcoreg_anat_file = prepend_a_letter({PREPROC.coreg_anat_file}, ones(size(PREPROC.coreg_anat_file)), 'w');
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 
 end
 
 if do_check
-    spm_check_registration({which('keuken_2014_enhanced_for_underlay.img'), PREPROC.wcoreg_anat_file});
+    spm_check_registration(which('keuken_2014_enhanced_for_underlay.img'), PREPROC.wcoreg_anat_file{1});
 end
 
 end
