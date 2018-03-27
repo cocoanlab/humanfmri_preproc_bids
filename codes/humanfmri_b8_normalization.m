@@ -17,11 +17,13 @@ function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, va
 %
 % :Optional Input:
 %
-% - 'no_check_reg' : The default is to check regitration of the output
-%                    images. If you want to skip it, then use this option.
 % - 'T1norm' : do T1 norm (default)
 % - 'EPInorm' : do EPI norm (but not using EPI, but using TPM.nii)
 % - 'lesion_mask' : do masking before segmentation -- can be used for lesion data
+% - 'no_check_reg' : The default is to check regitration of the output
+%                    images. If you want to skip it, then use this option.
+% - 'no_dc'          if you did not run distortion correction, please use 
+%                    this option.
 %
 % :Output(PREPROC):
 % :: 
@@ -55,6 +57,7 @@ do_check = true;
 do_t1norm = true;
 do_epinorm = false;
 use_mask = false;
+use_dc = true;
 
 % options
 for i = 1:length(varargin)
@@ -62,6 +65,8 @@ for i = 1:length(varargin)
         switch varargin{i}
             case {'no_check_reg'}
                 do_check = false;
+            case {'no_dc'}
+                use_dc = false;
             case {'T1norm'}
                 do_t1norm = true;
                 do_epinorm = false;
@@ -96,10 +101,19 @@ for subj_i = 1:numel(preproc_subject_dir)
     if do_epinorm
     
         if use_sbref
-            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.dc_func_sbref_files{1};
+            if use_dc
+                matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.dc_func_sbref_files{1};
+            else
+                matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = PREPROC.preproc_func_sbref_files{1};
+            end
         else
-            matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = [PREPROC.dcr_func_bold_files{1} ',1'];
+            if use_dc
+                matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = [PREPROC.dcr_func_bold_files{1} ',1'];
+            else
+                matlabbatch{1}.spm.spatial.preproc.channel.vols{1} = [PREPROC.r_func_bold_files{1} ',1'];
+            end
         end
+        
         
     elseif do_t1norm
     
@@ -128,7 +142,12 @@ for subj_i = 1:numel(preproc_subject_dir)
     deformation_nii = fullfile(b, ['y_' c '.nii']);
     
     matlabbatch{2}.spm.spatial.normalise.write.subj.def = {deformation_nii};
-    matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.dcr_func_bold_files;
+    
+    if use_dc
+        matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.dcr_func_bold_files;
+    else
+        matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.r_func_bold_files;
+    end
     
     matlabbatch{2}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
                                                               78    76    85];                                                      
@@ -145,7 +164,12 @@ for subj_i = 1:numel(preproc_subject_dir)
     for ii = 1:5
         PREPROC.segmentation{ii} = fullfile(b, ['c' num2str(ii) c '.nii']);
     end
-    PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.dcr_func_bold_files, ones(size(PREPROC.dcr_func_bold_files)), 'w');
+    
+    if use_dc
+        PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.dcr_func_bold_files, ones(size(PREPROC.dcr_func_bold_files)), 'w');
+    else
+        PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.r_func_bold_files, ones(size(PREPROC.r_func_bold_files)), 'w');
+    end
     
     for run_i = 1:numel(PREPROC.wr_func_bold_files)
         dat = fmri_data(PREPROC.wr_func_bold_files{run_i});

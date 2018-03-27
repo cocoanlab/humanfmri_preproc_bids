@@ -19,6 +19,8 @@ function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref, v
 %                              images (dcr_func( will be used. 
 %
 % :Optional input:
+% - 'no_dc'                 if you did not run distortion correction before 
+%                           coregistration, please use this option.
 %
 % - 'no_check_reg'          no check regisration. If you want to run all
 %                           the subject without any interaction, this will 
@@ -49,12 +51,15 @@ function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref, v
 % ..
 
 do_check = true;
+use_dc = true;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             case {'no_check_reg'}
                 do_check = false;
+            case {'no_dc'}
+                use_dc = false;
         end
     end
 end
@@ -76,10 +81,18 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     def = spm_get_defaults('coreg');
     
-    if use_sbref
-        matlabbatch{1}.spm.spatial.coreg.estimate.ref = PREPROC.dc_func_sbref_files(1);
+    if use_sbref 
+        if use_dc
+            matlabbatch{1}.spm.spatial.coreg.estimate.ref = PREPROC.dc_func_sbref_files(1);
+        else
+            matlabbatch{1}.spm.spatial.coreg.estimate.ref = PREPROC.preproc_func_sbref_files(1);
+        end
     else
-        matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[PREPROC.dcr_func_bold_files{1} ',1']};
+        if use_dc
+            matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[PREPROC.dcr_func_bold_files{1} ',1']};
+        else
+            matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[PREPROC.r_func_bold_files{1} ',1']};
+        end
     end
     
     matlabbatch{1}.spm.spatial.coreg.estimate.source = {PREPROC.coreg_anat_file};
@@ -93,14 +106,21 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
     
-    if use_sbref
-        if do_check
-            spm_check_registration(PREPROC.coreg_anat_file, PREPROC.dc_func_sbref_files{1});
+    if do_check
+        if use_sbref
+            if use_dc
+                original = PREPROC.dc_func_sbref_files{1};
+            else
+                original = PREPROC.preproc_func_sbref_files{1};
+            end
+        else
+            if use_dc
+                original = [PREPROC.dcr_func_bold_files{1} ',1'];
+            else
+                original = [PREPROC.r_func_bold_files{1} ',1'];
+            end
         end
-    else
-        if do_check
-            spm_check_registration(PREPROC.coreg_anat_file, [PREPROC.dcr_func_bold_files{1} ',1']);
-        end
+        spm_check_registration(PREPROC.coreg_anat_file, original);
     end
     
 end
