@@ -73,11 +73,13 @@ for i = 1:numel(f)
     
 end
 
-f2 = fields(PREPROC.topup);
-for i = 1:numel(f2)
-    wh_start = strfind(eval(['PREPROC.topup.' f2{i} ]), old_basedir);
-    eval(['PREPROC.topup.' f2{i} '(wh_start:old_base_character_n) = [];']);
-    eval(['PREPROC.topup.' f2{i} ' = fullfile(new_basedir, PREPROC.topup.' f2{i} ');']);
+if isfield(PREPROC, 'topup')
+    f2 = fields(PREPROC.topup);
+    for i = 1:numel(f2)
+        wh_start = strfind(eval(['PREPROC.topup.' f2{i} ]), old_basedir);
+        eval(['PREPROC.topup.' f2{i} '(wh_start:old_base_character_n) = [];']);
+        eval(['PREPROC.topup.' f2{i} ' = fullfile(new_basedir, PREPROC.topup.' f2{i} ');']);
+    end
 end
 
 end
