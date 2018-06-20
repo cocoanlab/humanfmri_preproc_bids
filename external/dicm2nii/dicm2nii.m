@@ -622,7 +622,7 @@ for i = 1:nRun
         val = repmat(double(val), [1 nFile]);
         for j = 2:nFile
             if isfield(h{i}{j}, fldsCk{k}), val(:,j) = h{i}{j}.(fldsCk{k});
-            else, keep(i) = 0; break;
+            else, keep(i) = 0; fprintf('Make a stop above (e.g., Ln618 or Ln583), and check h{%d}{%d}.%s\n', i, j, fldsCk{k}); break;
             end
         end
         if ~keep(i), break; end % skip silently
