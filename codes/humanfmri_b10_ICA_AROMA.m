@@ -103,10 +103,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     print_header('ICA-AROMA', a);
 
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
+    
+    % PREPROC.ica_aroma_outdir = fullfile(PREPROC..., 'ica_aroma');
+    % PREPROC.aswr_func_bold_files = prepend_a_letter(PREPROC.swr_func_bold_files, ones(size(PREPROC.swr_func_bold_files)), 'a');
 
     for run_i = 1:numel(PREPROC.swr_func_bold_files)
         
-        outdir = fullfile(PREPROC.preproc_func_dir, num2str(i));        
+        outdir = fullfile(PREPROC.ica_aroma_outdir, sprintf('run%2d', i));
         
         [d, f] = fileparts(PREPROC.swr_func_bold_files{run_i});
         mvmt_fname = fullfile(d, ['mvmt_' f '.txt']);
@@ -116,8 +119,13 @@ for subj_i = 1:numel(preproc_subject_dir)
         
         
         PREPROC.ica_aroma_dir = fullfile(outdir, 'melodic.ica');
-        PREPROC.ica_armoa_denoised_file{i} = fullfile(PREPROC.ica_aroma_dir, 'denoised_func_data_nonaggr.nii.gz'); 
+        % PREPROC.ica_armoa_denoised_file{i} = fullfile(PREPROC.ica_aroma_dir, 'denoised_func_data_nonaggr.nii.gz'); 
+        % move to func dir and change the name into "a"
+        % unzip first 'denoised_func_data_nonaggr.nii.gz'
+        % movefile(fullfile(outdir, 'denoised_func_data_nonaggr.nii.gz'), PREPROC.aswr_func_bold_files{run_i})
     end
+    
+    
 
 end
 
