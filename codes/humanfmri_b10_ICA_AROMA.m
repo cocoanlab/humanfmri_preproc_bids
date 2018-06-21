@@ -95,8 +95,9 @@ if compare_space(current_data, ica_mask{1})
     system(['gzip ' fullfile(ica_aroma_dir, '*.nii')]);
 end
 
-for subj_i = 1:numel(preproc_subject_dir)
 
+for subj_i = 1:numel(preproc_subject_dir)
+    
     subject_dir = preproc_subject_dir{subj_i};
     [~,a] = fileparts(subject_dir);
     print_header('ICA-AROMA', a);
@@ -105,16 +106,20 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     for run_i = 1:numel(PREPROC.swr_func_bold_files)
         
+        outdir = fullfile(PREPROC.preproc_func_dir, num2str(i));        
+        
         [d, f] = fileparts(PREPROC.swr_func_bold_files{run_i});
         mvmt_fname = fullfile(d, ['mvmt_' f '.txt']);
         dlmwrite(mvmt_fname, PREPROC.nuisance.mvmt_covariates{run_i}, 'delimiter','\t');
 
-        system([anaconda_dir '/python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' PREPROC.preproc_func_dir ' -mc ' mvmt_fname ' -tr ' num2str(PREPROC.TR)]);
+        system([anaconda_dir '/python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' outdir ' -mc ' mvmt_fname ' -tr ' num2str(PREPROC.TR)]);
+        
+        
+        PREPROC.ica_aroma_dir = fullfile(outdir, 'melodic.ica');
+        PREPROC.ica_armoa_denoised_file{i} = fullfile(PREPROC.ica_aroma_dir, 'denoised_func_data_nonaggr.nii.gz'); 
     end
 
 end
-
-PREPROC.ica_aroma_dir = fullfile(PREPROC.preproc_func_dir, 'melodic.ica');
 
 save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 
