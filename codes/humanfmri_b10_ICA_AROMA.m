@@ -14,16 +14,22 @@ function PREPROC = humanfmri_b10_ICA_AROMA(preproc_subject_dir, varargin)
 % - preproc_subject_dir     the subject directory for preprocessed data
 %                             (PREPROC.preproc_outputdir)
 %
-% ** this is still a working version. There might still be errors. 
+% ** this is still a working version. There might still be errors.
 %
 % :Optional Input:
 %    'ica_aroma_dir'
 %    'anaconda_dir'
+%    'nas'
 %
 % :Output(PREPROC):
-% :: 
-%     save results in PREPROC.ica_aroma_dir
-%    
+% ::
+%       PREPROC.preproc_outputdir
+%       PREPROC.ica_aroma_outdir
+%       PREPROC.ica_aroma_dir
+%       PREPROC.aswr_func_bold_files
+%
+%       save results in PREPROC.ica_aroma_dir
+%
 % ..
 %     Author and copyright information:
 %
@@ -46,6 +52,7 @@ function PREPROC = humanfmri_b10_ICA_AROMA(preproc_subject_dir, varargin)
 % you can change the default for your computer
 ica_aroma_dir = '/Users/clinpsywoo/Dropbox/github/ICA-AROMA';
 anaconda_dir = '/Users/clinpsywoo/anaconda/bin';
+isnas = false;
 
 for i = 1:numel(varargin)
     if ischar(varargin{i})
@@ -54,6 +61,8 @@ for i = 1:numel(varargin)
                 ica_aroma_dir = varargin{i+1};
             case {'anaconda_dir'}
                 anaconda_dir = varargin{i+1};
+            case {'nas'}
+                isnas=ture;
         end
     end
 end
@@ -79,6 +88,7 @@ subject_dir = preproc_subject_dir{1};
 PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
 current_data = fmri_data([PREPROC.swr_func_bold_files{1} ',1']);
 ica_mask{1} = fmri_data(fullfile(ica_aroma_dir, 'mask_csf.nii.gz'));
+delete(fullfile(ica_aroma_dir, 'mask_csf.nii')); % for avoiding overlap
 
 if compare_space(current_data, ica_mask{1})
     ica_mask{2} = fmri_data(fullfile(ica_aroma_dir, 'mask_edge.nii.gz'));
@@ -101,32 +111,43 @@ for subj_i = 1:numel(preproc_subject_dir)
     subject_dir = preproc_subject_dir{subj_i};
     [~,a] = fileparts(subject_dir);
     print_header('ICA-AROMA', a);
-
-    PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
-    % PREPROC.ica_aroma_outdir = fullfile(PREPROC..., 'ica_aroma');
-    % PREPROC.aswr_func_bold_files = prepend_a_letter(PREPROC.swr_func_bold_files, ones(size(PREPROC.swr_func_bold_files)), 'a');
-
+    %PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
+    PREPROC.ica_aroma_outdir = fullfile(PREPROC.preproc_outputdir, 'ica_aroma'); %
+    
+    % make specified mask for MELODIC
+    mask = fmri_data([PREPROC.swr_func_bold_files{1} ',1']);
+    mask.dat = double(mask.dat~=0);
+    mask.fullpath = fullfile(PREPROC.preproc_outputdir, 'preproc_mask.nii');
+    write(mask);
+    PREPROC.preproc_mask = mask.fullpath;
+    
+    PREPROC.aswr_func_bold_files = prepend_a_letter(PREPROC.swr_func_bold_files, ones(size(PREPROC.swr_func_bold_files)), 'a');
+    
     for run_i = 1:numel(PREPROC.swr_func_bold_files)
-        
-        outdir = fullfile(PREPROC.ica_aroma_outdir, sprintf('run%2d', i));
+        PREPROC.ica_aroma_dir{run_i} = fullfile(PREPROC.ica_aroma_outdir, sprintf('run%02d', run_i));
         
         [d, f] = fileparts(PREPROC.swr_func_bold_files{run_i});
         mvmt_fname = fullfile(d, ['mvmt_' f '.txt']);
         dlmwrite(mvmt_fname, PREPROC.nuisance.mvmt_covariates{run_i}, 'delimiter','\t');
-
-        system([anaconda_dir '/python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' outdir ' -mc ' mvmt_fname ' -tr ' num2str(PREPROC.TR)]);
+        
+        if isnas == true
+            % no anaconda evironment
+            system(['python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' PREPROC.ica_aroma_dir{run_i} ' -mc ' mvmt_fname ' -m ' PREPROC.preproc_mask ' -tr ' num2str(PREPROC.TR)]);
+        else
+            % anaconda evironment
+            system([anaconda_dir '/python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' PREPROC.ica_aroma_dir{run_i} ' -mc ' mvmt_fname ' -m ' PREPROC.preproc_mask ' -tr ' num2str(PREPROC.TR)]);
+        end
         
         
-        PREPROC.ica_aroma_dir = fullfile(outdir, 'melodic.ica');
-        % PREPROC.ica_armoa_denoised_file{i} = fullfile(PREPROC.ica_aroma_dir, 'denoised_func_data_nonaggr.nii.gz'); 
-        % move to func dir and change the name into "a"
-        % unzip first 'denoised_func_data_nonaggr.nii.gz'
-        % movefile(fullfile(outdir, 'denoised_func_data_nonaggr.nii.gz'), PREPROC.aswr_func_bold_files{run_i})
+        
+        temp_ica_aroma_denoised_file = fullfile(PREPROC.ica_aroma_dir{run_i}, 'denoised_func_data_nonaggr.nii.gz'); %non-aggressive denoised nii.gz files
+        gunzip(temp_ica_aroma_denoised_file); % unzip gzip file
+        temp_ica_aroma_denoised_file = fullfile(PREPROC.ica_aroma_dir{run_i}, 'denoised_func_data_nonaggr.nii'); %non-aggressive denoised nii files
+        
+        movefile(temp_ica_aroma_denoised_file, PREPROC.aswr_func_bold_files{run_i}); % move nii file to 'subject/func' folder
+        
     end
-    
-    
-
 end
 
 save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
