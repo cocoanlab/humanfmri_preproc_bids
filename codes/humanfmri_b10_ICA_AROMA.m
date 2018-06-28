@@ -62,7 +62,7 @@ for i = 1:numel(varargin)
             case {'anaconda_dir'}
                 anaconda_dir = varargin{i+1};
             case {'nas'}
-                isnas=ture;
+                isnas=true;
         end
     end
 end
