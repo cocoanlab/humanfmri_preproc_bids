@@ -131,23 +131,41 @@ for subj_i = 1:numel(preproc_subject_dir)
         mvmt_fname = fullfile(d, ['mvmt_' f '.txt']);
         dlmwrite(mvmt_fname, PREPROC.nuisance.mvmt_covariates{run_i}, 'delimiter','\t');
         
+        % === you can freely modified this ica_aroma command and options === % 
         if isnas == true
-            % no anaconda evironment
-            system(['python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' PREPROC.ica_aroma_dir{run_i} ' -mc ' mvmt_fname ' -m ' PREPROC.preproc_mask ' -tr ' num2str(PREPROC.TR)]);
+            % command without anaconda environment
+            command = ['python2.7 ' ica_aroma ...
+                ' -in ' PREPROC.swr_func_bold_files{run_i} ...
+                ' -out ' PREPROC.ica_aroma_dir{run_i} ...
+                ' -mc ' mvmt_fname ...
+                ' -m ' PREPROC.preproc_mask ...
+                ' -tr ' num2str(PREPROC.TR) ];
+                % ' -ow ']; - overwritten options
         else
-            % anaconda evironment
-            system([anaconda_dir '/python2.7 ' ica_aroma ' -in ' PREPROC.swr_func_bold_files{run_i} ' -out ' PREPROC.ica_aroma_dir{run_i} ' -mc ' mvmt_fname ' -m ' PREPROC.preproc_mask ' -tr ' num2str(PREPROC.TR)]);
-        end
+            % command with anaconda environment
+            command = [anaconda_dir '/python2.7 ' ica_aroma ...
+                ' -in ' PREPROC.swr_func_bold_files{run_i} ...
+                ' -out ' PREPROC.ica_aroma_dir{run_i} ...
+                ' -mc ' mvmt_fname ...
+                ' -m ' PREPROC.preproc_mask ...
+                ' -tr ' num2str(PREPROC.TR) ];
+                % ' -ow ']; - overwritten options
+        end     
+        system(command); % run python script
         
-        
+        system('exit()'); % exit python environment
+    end
+    
+    % moving denoised imaging files into func folder
+    for run_i = 1:numel(PREPROC.swr_func_bold_files)
         
         temp_ica_aroma_denoised_file = fullfile(PREPROC.ica_aroma_dir{run_i}, 'denoised_func_data_nonaggr.nii.gz'); %non-aggressive denoised nii.gz files
         gunzip(temp_ica_aroma_denoised_file); % unzip gzip file
-        temp_ica_aroma_denoised_file = fullfile(PREPROC.ica_aroma_dir{run_i}, 'denoised_func_data_nonaggr.nii'); %non-aggressive denoised nii files
-        
+        temp_ica_aroma_denoised_file = fullfile(PREPROC.ica_aroma_dir{run_i}, 'denoised_func_data_nonaggr.nii'); %non-aggressive denoised nii files        
         movefile(temp_ica_aroma_denoised_file, PREPROC.aswr_func_bold_files{run_i}); % move nii file to 'subject/func' folder
         
     end
+    
 end
 
 save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
