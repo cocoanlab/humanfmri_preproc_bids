@@ -23,7 +23,6 @@ function PREPROC = humanfmri_b10_ICA_AROMA(preproc_subject_dir, varargin)
 %
 % :Output(PREPROC):
 % ::
-%       PREPROC.preproc_outputdir
 %       PREPROC.ica_aroma_outdir
 %       PREPROC.ica_aroma_dir
 %       PREPROC.aswr_func_bold_files
