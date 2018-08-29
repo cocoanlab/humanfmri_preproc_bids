@@ -1,6 +1,6 @@
 function PREPROC = save_load_PREPROC(subject_dir, varargin)
 
-% support function for save and load the PREPROC file
+% support function for save and load the PREPROC file.
 % 
 % :Usage:
 % :: 
