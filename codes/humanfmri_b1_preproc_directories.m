@@ -76,7 +76,14 @@ for subj_i = 1:numel(subject_codes)
     preproc_subject_dir{subj_i} = PREPROC.preproc_outputdir;
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % load PREPROC
-    save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+    if exist(fullfile(PREPROC.preproc_outputdir, 'PREPROC.mat'), 'file')
+        disp('******* WARNING *******');
+        fprintf('PREPROC.mat already exists in %s\n', PREPROC.preproc_outputdir);
+        s = input('Do you want to overwrite PREPROC.mat with the file from ''raw'' directory? (y/n) ', 's');
+        if s == 'y'
+            save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+        end
+    end
 end
 
 end

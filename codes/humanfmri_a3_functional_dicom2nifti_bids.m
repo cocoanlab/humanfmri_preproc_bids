@@ -18,7 +18,8 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 % - study_imaging_dir  the directory information for the study imaging data
 %                      (e.g., study_imaging_dir = '/NAS/data/CAPS2/Imaging')
 % - disdaq_input    the number of images you want to discard (to allow for
-%                   image intensity stablization)
+%                   image intensity stablization) for functional runs; it
+%                   can be one value or 
 %
 % :Optional Input:
 %
@@ -64,6 +65,7 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 
 check_disdaq = true;
 use_parfor = false;
+run_num = [];
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -72,6 +74,8 @@ for i = 1:length(varargin)
                 check_disdaq = false;
             case {'use_parfor'}
                 use_parfor = true;
+            case {'run_num'}
+                run_num = varargin{i+1};
         end
     end
 end
@@ -102,21 +106,33 @@ for subj_i = 1:numel(subject_codes)
         disdaq_n(contains(func_dirs, '_bold')) = disdaq_input;
     end
     
+    %% runs to include
+    if ~isempty(run_num)
+        for i = 1:numel(run_num)
+            run_str{i} = sprintf('run-%02d', run_num(i));
+        end
+        do_preproc = contains(func_dirs, run_str);
+    else
+        do_preproc = true(numel(func_dirs),1);
+    end
+    
+    %% func directories
+    
     for i = 1:numel(func_dirs)
         [~, func_names{i,1}] = fileparts(func_dirs{i});
     end
     
-    %% Make sure disdaq n is correct
+    %% Make sure disdaq n and run numbers to include are all correct
     
     if subj_i == 1
         try
-            t = table(func_names, disdaq_n)
+            t = table(func_names, disdaq_n, do_preproc)
         catch
-            t = table(func_names, disdaq_n')
+            t = table(func_names, disdaq_n', do_preproc)
         end
         
         if check_disdaq
-            s = input('Is the disdaq_n correct? (Y or N) ', 's');
+            s = input('Is the disdaq_n and do_preproc correct? (Y or N) ', 's');
 
             if strcmp(s, 'N') || strcmp(s, 'n')
                 error('Please check the disdaq numbers, and run this again.');
@@ -138,72 +154,74 @@ for subj_i = 1:numel(subject_codes)
     % loop for runs
     for i = 1:numel(func_dirs)
         
-        disdaq = disdaq_n(i);
-        
-        str{1} = repmat('-', 1, 60); str{3} = str{1};
-        str{2} = ['Working on ' func_names{i}];
-        for j = 1:numel(str), disp(str{j}); end
-        
-        %% **** dicm2nii ****
-        
-        cd(func_dirs{i}); % entering into the directory because of the problems
-        % related to the length of the files
-        dicom_imgs = filenames('*IMA');
-        while isempty(dicom_imgs)
-            cd(filenames('*', 'char'));
-            dicom_imgs = filenames('*IMA');
-        end
-        
-        taskname = func_dirs{1}(strfind(func_dirs{1}, 'func_task-')+10:strfind(func_dirs{1}, 'run-')-2);
-        
-        if use_parfor
-            dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname, 'use_parfor');
-        else
-            dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname);
-        end
+        % only run this for the selected runs if run_num is provided
+        if do_preproc(i)
             
-        out = load(fullfile(outdir, 'dcmHeaders.mat'));
-        f = fields(out.h);
-        
-        %% **** 3d to 4d ****
-        
-        cd(outdir);
-        
-        nifti_3d = filenames([f{1} '*.nii']);
-        
-        if disdaq > 0
-            disp('Saving disdaq_image...')
-            spm_file_merge(nifti_3d(1:disdaq), fullfile(outdisdaqdir, sprintf('disdaq_first_%02d_imgs_%s.nii', disdaq, func_names{i}(6:end))));
-        end
-        
-        [~, subj_id] = fileparts(PREPROC.subject_dir);
-        output_4d_fnames = fullfile(outdir, sprintf('%s_%s', subj_id, func_names{i}(6:end)));
-        output_dcmheaders_fnames = fullfile(outdisdaqdir, sprintf('%s_%s', subj_id, func_names{i}(6:end)));
-        
-        disp('Converting 3d images to 4d images...')
-        spm_file_merge(nifti_3d((disdaq+1):end), [output_4d_fnames '.nii']);
-        
-        delete(fullfile(outdir, [f{1} '*nii']))
-        
-        %% **** change the json file name and save PREPROC ****
-        movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
-        
-        if contains(output_4d_fnames, '_bold')
-            PREPROC.func_bold_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
-            PREPROC.func_bold_json_files{ceil(i/2),1} = filenames([output_4d_fnames '.json'], 'char');
-        elseif contains(output_4d_fnames, '_sbref')
-            PREPROC.func_sbref_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
-            PREPROC.func_sbref_json_files{ceil(i/2),1} = filenames([output_4d_fnames '.json'], 'char');
-        end
-        
-        eval(['h = out.h.' f{1} ';']);
-        
-        PREPROC.dicomheader_files{i} = [output_dcmheaders_fnames '_dcmheaders.mat'];
-        save(PREPROC.dicomheader_files{i}, 'h');
-        delete(fullfile(outdir, 'dcmHeaders.mat'));
-        
+            disdaq = disdaq_n(i);
+            
+            str{1} = repmat('-', 1, 60); str{3} = str{1};
+            str{2} = ['Working on ' func_names{i}];
+            for j = 1:numel(str), disp(str{j}); end
+            
+            %% **** dicm2nii ****
+            
+            cd(func_dirs{i}); % entering into the directory because of the problems
+            % related to the length of the files
+            dicom_imgs = filenames('*IMA');
+            while isempty(dicom_imgs)
+                cd(filenames('*', 'char'));
+                dicom_imgs = filenames('*IMA');
+            end
+            
+            taskname = func_dirs{1}(strfind(func_dirs{1}, 'func_task-')+10:strfind(func_dirs{1}, 'run-')-2);
+            
+            if use_parfor
+                dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname, 'use_parfor');
+            else
+                dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname);
+            end
+            
+            out = load(fullfile(outdir, 'dcmHeaders.mat'));
+            f = fields(out.h);
+            
+            %% **** 3d to 4d ****
+            
+            cd(outdir);
+            
+            nifti_3d = filenames([f{1} '*.nii']);
+            
+            if disdaq > 0
+                disp('Saving disdaq_image...')
+                spm_file_merge(nifti_3d(1:disdaq), fullfile(outdisdaqdir, sprintf('disdaq_first_%02d_imgs_%s.nii', disdaq, func_names{i}(6:end))));
+            end
+            
+            [~, subj_id] = fileparts(PREPROC.subject_dir);
+            output_4d_fnames = fullfile(outdir, sprintf('%s_%s', subj_id, func_names{i}(6:end)));
+            output_dcmheaders_fnames = fullfile(outdisdaqdir, sprintf('%s_%s', subj_id, func_names{i}(6:end)));
+            
+            disp('Converting 3d images to 4d images...')
+            spm_file_merge(nifti_3d((disdaq+1):end), [output_4d_fnames '.nii']);
+            
+            delete(fullfile(outdir, [f{1} '*nii']))
+            
+            %% **** change the json file name and save PREPROC ****
+            movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
+            
+            if contains(output_4d_fnames, '_bold')
+                PREPROC.func_bold_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
+                PREPROC.func_bold_json_files{ceil(i/2),1} = filenames([output_4d_fnames '.json'], 'char');
+            elseif contains(output_4d_fnames, '_sbref')
+                PREPROC.func_sbref_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
+                PREPROC.func_sbref_json_files{ceil(i/2),1} = filenames([output_4d_fnames '.json'], 'char');
+            end
+            
+            eval(['h = out.h.' f{1} ';']);
+            
+            PREPROC.dicomheader_files{i} = [output_dcmheaders_fnames '_dcmheaders.mat'];
+            save(PREPROC.dicomheader_files{i}, 'h');
+            delete(fullfile(outdir, 'dcmHeaders.mat'));
+        end 
     end
-    
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
     disp('Done');
 end

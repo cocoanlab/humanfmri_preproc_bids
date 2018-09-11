@@ -58,6 +58,7 @@ do_t1norm = true;
 do_epinorm = false;
 use_mask = false;
 use_dc = true;
+run_num = [];
 
 % options
 for i = 1:length(varargin)
@@ -76,6 +77,8 @@ for i = 1:length(varargin)
             case {'lesion_mask'}
                 use_mask = true;
                 mask = varargin{i+1};
+            case {'run_num'}
+                run_num = varargin{i+1};
         end
     end
 end
@@ -90,7 +93,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
-    %% Segmentation
+    %% Segmentation and warping
     
     load(which('segment_job.mat'));
     
@@ -143,10 +146,16 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     matlabbatch{2}.spm.spatial.normalise.write.subj.def = {deformation_nii};
     
+    %% RUNS TO INCLUDE
+    do_preproc = true(numel(PREPROC.r_func_bold_files),1);
+    if ~isempty(run_num)
+        do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
+    end
+    
     if use_dc
-        matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.dcr_func_bold_files;
+        matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.dcr_func_bold_files(do_preproc);
     else
-        matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.r_func_bold_files;
+        matlabbatch{2}.spm.spatial.normalise.write.subj.resample = PREPROC.r_func_bold_files(do_preproc);
     end
     
     matlabbatch{2}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
@@ -171,7 +180,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         PREPROC.wr_func_bold_files = prepend_a_letter(PREPROC.r_func_bold_files, ones(size(PREPROC.r_func_bold_files)), 'w');
     end
     
-    for run_i = 1:numel(PREPROC.wr_func_bold_files)
+    for run_i = find(do_preproc)' %1:numel(PREPROC.wr_func_bold_files)
         dat = fmri_data(PREPROC.wr_func_bold_files{run_i});
         mdat = mean(dat);
 
@@ -181,17 +190,17 @@ for subj_i = 1:numel(preproc_subject_dir)
         write(mdat);
     end
     
-    mean_wr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_wr_func_bold.png'); % Scott added some lines to actually save the spike images
+    mean_wr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_wr_func_bold.png'); 
     canlab_preproc_show_montage(PREPROC.mean_wr_func_bold_files, mean_wr_func_bold_png);
     drawnow;
     
     close all;
     
-    seg_png = fullfile(PREPROC.qcdir, 'segmentation.png'); % Scott added some lines to actually save the spike images
+    seg_png = fullfile(PREPROC.qcdir, 'segmentation.png'); 
     canlab_preproc_show_montage(PREPROC.segmentation, seg_png);
     drawnow;
     
-    % warping anatomical image
+    %% warping anatomical image
     clear matlabbatch;
     
     matlabbatch{1}.spm.spatial.normalise.write.subj.def = {deformation_nii};

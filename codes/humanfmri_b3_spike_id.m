@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b3_spike_id(preproc_subject_dir)
+function PREPROC = humanfmri_b3_spike_id(preproc_subject_dir, varargin)
 
 % This function detects outliers (spikes) based on Mahalanobis distance 
 % and rmssd.
@@ -41,6 +41,17 @@ function PREPROC = humanfmri_b3_spike_id(preproc_subject_dir)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+run_num = [];
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'run_num'}
+                run_num = varargin{i+1};
+        end
+    end
+end
+
 for subj_i = 1:numel(preproc_subject_dir)
     
     subject_dir = preproc_subject_dir{subj_i};
@@ -49,28 +60,37 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
+    %% RUNS TO INCLUDE
+    do_preproc = true(numel(PREPROC.preproc_func_bold_files),1);
+    if ~isempty(run_num)
+        do_preproc(~ismember(1:numel(PREPROC.preproc_func_bold_files), run_num)) = false;
+    end
+    
     %% DETECT OUTLIERS using canlab tools
     for run_i = 1:numel(PREPROC.preproc_func_bold_files)
         
-        dat = fmri_data(PREPROC.preproc_func_bold_files{run_i}, PREPROC.implicit_mask_file);
-        dat.images_per_session = size(dat.dat,2);
-
-        [~,a] = fileparts(PREPROC.preproc_func_bold_files{run_i});
-    
-        diary(fullfile(PREPROC.qcdir, ['qc_diary_' a '.txt']));
-        dat = preprocess(dat, 'outliers', 'plot');  % Spike detect and globals by slice
-    
-        subplot(5, 1, 5);
-        dat = preprocess(dat, 'outliers_rmssd', 'plot');  % RMSSD Spike detect
-        diary off;
-        sz = get(0, 'screensize'); % Wani added two lines to make this visible (but it depends on the size of the monitor)
-        set(gcf, 'Position', [sz(3)*.02 sz(4)*.05 sz(3) *.45 sz(4)*.85]);
-        drawnow;
-    
-        qcspikefilename = fullfile(PREPROC.qcdir, ['qc_spike_plot_' a '.png']); % Scott added some lines to actually save the spike images
-        saveas(gcf,qcspikefilename);
-    
-        PREPROC.nuisance.spike_covariates{run_i} = dat.covariates; % the first one is global signal, that I don't need.
+        if do_preproc(run_i)
+            
+            dat = fmri_data(PREPROC.preproc_func_bold_files{run_i}, PREPROC.implicit_mask_file);
+            dat.images_per_session = size(dat.dat,2);
+            
+            [~,a] = fileparts(PREPROC.preproc_func_bold_files{run_i});
+            
+            diary(fullfile(PREPROC.qcdir, ['qc_diary_' a '.txt']));
+            dat = preprocess(dat, 'outliers', 'plot');  % Spike detect and globals by slice
+            
+            subplot(5, 1, 5);
+            dat = preprocess(dat, 'outliers_rmssd', 'plot');  % RMSSD Spike detect
+            diary off;
+            sz = get(0, 'screensize'); % Wani added two lines to make this visible (but it depends on the size of the monitor)
+            set(gcf, 'Position', [sz(3)*.02 sz(4)*.05 sz(3) *.45 sz(4)*.85]);
+            drawnow;
+            
+            qcspikefilename = fullfile(PREPROC.qcdir, ['qc_spike_plot_' a '.png']); % Scott added some lines to actually save the spike images
+            saveas(gcf,qcspikefilename);
+            
+            PREPROC.nuisance.spike_covariates{run_i} = dat.covariates; % the first one is global signal, that I don't need.
+        end
     end
 
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC

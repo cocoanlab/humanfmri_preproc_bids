@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_enc_dir, use_sbref)
+function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_enc_dir, use_sbref, varargin)
 
 % This function applies the distortion correction using fsl's topup.
 %
@@ -51,7 +51,16 @@ function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_e
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+run_num = [];
 
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'run_num'}
+                run_num = varargin{i+1};
+        end
+    end
+end
 
 %% add fsl path 
 setenv('PATH', [getenv('PATH') ':/usr/local/fsl/bin']);
@@ -116,9 +125,15 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.topup.topup_fieldout = topup_fieldout;
     PREPROC.topup.topup_unwarped = topup_unwarped;
     
-    % Applying topup on BOLD files
+    %% RUNS TO INCLUDE
+    do_preproc = true(numel(PREPROC.r_func_bold_files),1);
+    if ~isempty(run_num)
+        do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
+    end
     
-    for i = 1:numel(PREPROC.r_func_bold_files)
+    %% Applying topup on BOLD files
+    
+    for i = find(do_preproc)'
         fprintf('\n- Applying topup on run %d/%d', i, numel(PREPROC.r_func_bold_files));
         input_dat = PREPROC.r_func_bold_files{i};
         [~, a] = fileparts(input_dat);
@@ -136,7 +151,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     if use_sbref
         % Applying topup on SBREF files
         
-        for i = 1:numel(PREPROC.preproc_func_sbref_files)
+        for i = find(do_preproc)' 
             fprintf('\n- Applying topup on run %d/%d', i, numel(PREPROC.preproc_func_sbref_files));
             input_dat = PREPROC.preproc_func_sbref_files{i};
             [~, a] = fileparts(input_dat);

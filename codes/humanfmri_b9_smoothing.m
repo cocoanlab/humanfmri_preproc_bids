@@ -44,12 +44,15 @@ function PREPROC = humanfmri_b9_smoothing(preproc_subject_dir, varargin)
 % ..
 
 fwhm = 5; % default fwhm
+run_num = [];
 
 for i = 1:numel(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             case {'fwhm'} % in seconds
                 fwhm = varargin{i+1};
+            case {'run_num'}
+                run_num = varargin{i+1};
         end
     end
 end
@@ -62,12 +65,18 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
     
+    %% RUNS TO INCLUDE
+    do_preproc = true(numel(PREPROC.r_func_bold_files),1);
+    if ~isempty(run_num)
+        do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
+    end
+    
     matlabbatch = {};
     matlabbatch{1}.spm.spatial.smooth.prefix = 's';
     matlabbatch{1}.spm.spatial.smooth.dtype = 0; % data type; 0 = same as before
     matlabbatch{1}.spm.spatial.smooth.im = 0; % implicit mask; 0 = no
     matlabbatch{1}.spm.spatial.smooth.fwhm = repmat(fwhm, 1, 3); % override whatever the defaults were with this
-    matlabbatch{1}.spm.spatial.smooth.data = PREPROC.wr_func_bold_files;
+    matlabbatch{1}.spm.spatial.smooth.data = PREPROC.wr_func_bold_files(do_preproc);
     
     % Save the job
     PREPROC.smoothing_job = matlabbatch;
@@ -79,7 +88,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     spm_jobman('initcfg');
     spm_jobman('run', matlabbatch);
 
-    for run_i = 1:numel(PREPROC.swr_func_bold_files)
+    for run_i = find(do_preproc)' %1:numel(PREPROC.swr_func_bold_files)
         dat = fmri_data(PREPROC.swr_func_bold_files{run_i});
         mdat = mean(dat);
 

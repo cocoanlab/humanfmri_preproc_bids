@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b5_motion_correction(preproc_subject_dir, use_st_corrected_data, use_sbref)
+function PREPROC = humanfmri_b5_motion_correction(preproc_subject_dir, use_st_corrected_data, use_sbref, varargin)
 
 % This function does motion correction (realignment) on functional data.
 %
@@ -41,6 +41,16 @@ function PREPROC = humanfmri_b5_motion_correction(preproc_subject_dir, use_st_co
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+run_num = [];
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'run_num'}
+                run_num = varargin{i+1};
+        end
+    end
+end
 
 for subj_i = 1:numel(preproc_subject_dir)
 
@@ -51,6 +61,19 @@ for subj_i = 1:numel(preproc_subject_dir)
     print_header('Motion correction (realignment)', a);
 
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
+    
+    %% RUNS TO INCLUDE
+    do_preproc = true(numel(PREPROC.preproc_func_bold_files),1);
+    if ~isempty(run_num)
+        if ~use_sbref
+            warning('With run_num, you will end up using a different image as a reference.');
+            warning('Please consider to use SBREF as your reference image.');
+            warning('OR you could also provide a reference image, but this has not been implemented yet.');
+            error('Sorry about that.');
+        else
+            do_preproc(~ismember(1:numel(PREPROC.preproc_func_bold_files), run_num)) = false;
+        end
+    end
 
     %% DEFAULT
     def = spm_get_defaults('realign');
@@ -63,12 +86,11 @@ for subj_i = 1:numel(preproc_subject_dir)
     matlabbatch{1}.spm.spatial.realign.estwrite.roptions.mask = 0; % do not mask (will set data to zero at edges!)
     
     if use_st_corrected_data
-        data = PREPROC.a_func_bold_files;
+        data = PREPROC.a_func_bold_files(do_preproc);
     else
-        data = PREPROC.preproc_func_bold_files;
+        data = PREPROC.preproc_func_bold_files(do_preproc);
     end
     
-
     %% run realign ACROSS runs 
     if use_sbref
         data_all = [PREPROC.preproc_func_sbref_files(1);data];
@@ -80,10 +102,16 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC.realign_job = matlabbatch{1};
 
-    PREPROC.r_func_bold_files = prepend_a_letter(data, ones(size(data)), 'r');
+    PREPROC.r_func_bold_files(do_preproc) = prepend_a_letter(data, ones(size(data)), 'r');
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 
+    %% If there is run_num, change the mvmt file name to save the original mvmt
+    if ~isempty(run_num)
+        [d, f] = fileparts(PREPROC.mvmt_param_files);
+        movefile(PREPROC.mvmt_param_files, fullfile(d, [f '_original.txt']));
+    end
+    
     %% RUN
     spm('defaults','fmri');
     spm_jobman('initcfg');
@@ -99,13 +127,16 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     PREPROC.mvmt_param_files = fullfile(d, ['rp_' f '.txt']);
     temp_mvmt = textread(PREPROC.mvmt_param_files);
-    PREPROC.nuisance.all_mvmt = temp_mvmt(2:end); 
+    % PREPROC.nuisance.all_mvmt = temp_mvmt(2:end,:); 
     
-    for run_i = 1:numel(data)
+    k = 0;
+    for run_i = find(do_preproc)'
         
-        images_per_session = numel(spm_vol(data{run_i}));
+        k = k + 1;
+        images_per_session = numel(spm_vol(data{k}));
         
         if run_i == 1, kk = 2; else, kk = 1; end
+        
         PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(kk:(images_per_session+kk-1),:);
         temp_mvmt(1:(images_per_session+kk-1),:) = [];
         

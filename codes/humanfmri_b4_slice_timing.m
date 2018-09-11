@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf)
+function PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf, varargin)
 
 % This function does slice time correction for functional data. This is 
 % using "MosaicRefAcqTimes" information (the actual slice timing information) 
@@ -43,7 +43,20 @@ function PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+%
+% Programmer's notes:
+%  ** Caution: This function hasn't been fully tested.
+%              
+run_num = [];
 
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'run_num'}
+                run_num = varargin{i+1};
+        end
+    end
+end
 
 for subj_i = 1:numel(preproc_subject_dir)
 
@@ -56,8 +69,14 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC.slice_time = dicomheader.h.MosaicRefAcqTimes';
 
+    %% RUNS TO INCLUDE
+    do_preproc = true(numel(PREPROC.preproc_func_bold_files),1);
+    if ~isempty(run_num)
+        do_preproc(~ismember(1:numel(PREPROC.preproc_func_bold_files), run_num)) = false;
+    end
+    
     %% DATA
-    slice_timing_job{1}.spm.temporal.st.scans{1} = PREPROC.preproc_func_bold_files; % individual 3d images in cell str
+    slice_timing_job{1}.spm.temporal.st.scans{1} = PREPROC.preproc_func_bold_files(do_preproc); % individual 4d images in cell str
 
     %% 1. nslices
     Vfirst_vol = spm_vol([PREPROC.preproc_func_bold_files{1} ',1']);
