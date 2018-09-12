@@ -94,7 +94,7 @@ for subj_i = 1:numel(preproc_subject_dir)
 
         [~, b] = fileparts(PREPROC.swr_func_bold_files{run_i });
         mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
-        c{run_i,1} = mdat.fullpath; % output
+        PREPROC.mean_swr_func_bold_files{run_i,1} = mdat.fullpath; % output
         write(mdat);
     end
     
