@@ -58,8 +58,6 @@ for subj_i = 1:numel(preproc_subject_dir)
     %    func_bold_files = PREPROC.dc_func_bold_files;
     %else
     
-    copyfile([fileparts(PREPROC.func_bold_files{1}) '/*'], PREPROC.preproc_func_dir)
-    
     for i = 1:numel(PREPROC.func_bold_files)
         [~,b] = fileparts(PREPROC.func_bold_files{i});
         PREPROC.preproc_func_bold_files{i,1} = fullfile(PREPROC.preproc_func_dir, [b '.nii']);
@@ -70,7 +68,6 @@ for subj_i = 1:numel(preproc_subject_dir)
     end
     
     func_bold_files = PREPROC.preproc_func_bold_files;
-    %end
     
     [~, ~, ~, ~, outputname] = fmri_mask_thresh_canlab(char(func_bold_files),...
         fullfile(PREPROC.preproc_outputdir, 'implicit_mask.nii'));

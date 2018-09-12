@@ -1,4 +1,4 @@
-function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, study_imaging_dir)
+function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, study_imaging_dir, varargin)
 
 % This function creates directories for data preprocessing
 %
@@ -39,7 +39,19 @@ function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, st
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+run_num = [];
+do_savepreproc_inpreprocdir = false;
 
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'run_num'}
+                run_num = varargin{i+1};
+            case {'forced_save'}
+                do_savepreproc_inpreprocdir = true;
+        end
+    end
+end
 
 if ~iscell(subject_code)
     subject_codes{1} = subject_code;
@@ -75,15 +87,21 @@ for subj_i = 1:numel(subject_codes)
     
     preproc_subject_dir{subj_i} = PREPROC.preproc_outputdir;
     
-    save_load_PREPROC(subject_dir, 'save', PREPROC); % load PREPROC
-    if exist(fullfile(PREPROC.preproc_outputdir, 'PREPROC.mat'), 'file')
-        disp('******* WARNING *******');
-        fprintf('PREPROC.mat already exists in %s\n', PREPROC.preproc_outputdir);
-        s = input('Do you want to overwrite PREPROC.mat with the file from ''raw'' directory? (y/n) ', 's');
-        if s == 'y'
-            save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
-        end
+    fnames = [];
+    if ~isempty(run_num)
+        for i = 1:numel(run_num), fnames = [fnames; filenames(sprintf('%srun-%02d*', [fileparts(PREPROC.func_bold_files{1}) '/*'], run_num(i)))]; end
+        % update the files of run_num
+        for i = 1:size(fnames,1), copyfile(fnames{i}, PREPROC.preproc_func_dir); end
+    else
+        copyfile([fileparts(PREPROC.func_bold_files{1}) '/*'], PREPROC.preproc_func_dir);
     end
+    
+    save_load_PREPROC(subject_dir, 'save', PREPROC); % load PREPROC
+    
+    if isempty(run_num) || do_savepreproc_inpreprocdir
+        save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+    end
+    
 end
 
 end

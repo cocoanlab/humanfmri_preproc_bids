@@ -129,6 +129,16 @@ for subj_i = 1:numel(preproc_subject_dir)
     do_preproc = true(numel(PREPROC.r_func_bold_files),1);
     if ~isempty(run_num)
         do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
+        
+        % delete the already exist dcr* files & dc_*sbref.nii
+        for z = 1:numel(run_num)
+            if exist(PREPROC.dcr_func_bold_files{run_num(z)})
+                delete(PREPROC.dcr_func_bold_files{run_num(z)})
+            end
+            if exist(PREPROC.dc_func_sbref_files{run_num(z)})
+                delete(PREPROC.dc_func_sbref_files{run_num(z)})
+            end
+        end      
     end
     
     %% Applying topup on BOLD files
