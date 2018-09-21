@@ -110,6 +110,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     if ~isempty(run_num)
         [d, f] = fileparts(PREPROC.mvmt_param_files);
         movefile(PREPROC.mvmt_param_files, fullfile(d, [f '_original.txt']));
+        
+        % delete the already exist 'rsub-f*bold.nii' files
+        for z = 1:numel(run_num)
+            if exist(PREPROC.r_func_bold_files{run_num(z)})
+                delete(PREPROC.r_func_bold_files{run_num(z)})
+            end
+        end     
     end
     
     %% RUN
