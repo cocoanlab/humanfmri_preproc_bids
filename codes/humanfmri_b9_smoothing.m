@@ -69,6 +69,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     do_preproc = true(numel(PREPROC.r_func_bold_files),1);
     if ~isempty(run_num)
         do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
+        % delete existed output files
+        for z = 1:numel(run_num)
+            exist_file = prepend_a_letter(PREPROC.wr_func_bold_files(run_num), ones(size(PREPROC.wr_func_bold_files(run_num))), 's');
+            if exist(exist_file{z})
+                delete(exist_file{z})
+            end
+        end
     end
     
     matlabbatch = {};

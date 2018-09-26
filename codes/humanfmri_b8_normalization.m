@@ -150,6 +150,17 @@ for subj_i = 1:numel(preproc_subject_dir)
     do_preproc = true(numel(PREPROC.r_func_bold_files),1);
     if ~isempty(run_num)
         do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
+        % delete existed output files
+        if use_dc
+            existed_file = prepend_a_letter(PREPROC.dcr_func_bold_files(run_num), ones(size(PREPROC.dcr_func_bold_files(run_num))), 'w');
+        else
+            existed_file = prepend_a_letter(PREPROC.r_func_bold_files(run_num), ones(size(PREPROC.r_func_bold_files(run_num))), 'w');
+        end
+        for z = 1:numel(existed_file)
+            if exist(existed_file{z})
+                delete(existed_file{z})
+            end
+        end
     end
     
     if use_dc
