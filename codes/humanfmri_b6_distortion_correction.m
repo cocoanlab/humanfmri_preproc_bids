@@ -52,7 +52,7 @@ function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_e
 % ..
 
 run_num = [];
-
+do_overwritten = false;
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
