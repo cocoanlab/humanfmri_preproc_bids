@@ -58,6 +58,8 @@ for i = 1:length(varargin)
         switch varargin{i}
             case {'run_num'}
                 run_num = varargin{i+1};
+            case {'overwritten'}
+                do_overwritten = true; %for unzip (gzip)
         end
     end
 end
@@ -155,7 +157,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         system(['fslmaths ', PREPROC.dcr_func_bold_files{i}, ' -abs ', PREPROC.dcr_func_bold_files{i}, ' -odt short']);
         
         % unzip
-        system(['gzip -d ' PREPROC.dcr_func_bold_files{i} '.gz']);
+        if do_overwritten
+            system(['gzip -d -f ' PREPROC.dcr_func_bold_files{i} '.gz']);
+        else
+            system(['gzip -d ' PREPROC.dcr_func_bold_files{i} '.gz']);
+        end
     end
 
     if use_sbref
@@ -173,7 +179,11 @@ for subj_i = 1:numel(preproc_subject_dir)
             system(['fslmaths ', PREPROC.dc_func_sbref_files{i}, ' -abs ', PREPROC.dc_func_sbref_files{i}, ' -odt short']);
             
             % unzip
-            system(['gzip -d ' PREPROC.dc_func_sbref_files{i} '.gz']);
+            if do_overwritten
+                system(['gzip -d -f ' PREPROC.dc_func_sbref_files{i} '.gz']);
+            else
+                system(['gzip -d ' PREPROC.dc_func_sbref_files{i} '.gz']);
+            end
         end
     end
     
