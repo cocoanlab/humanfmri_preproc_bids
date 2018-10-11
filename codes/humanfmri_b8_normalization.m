@@ -125,6 +125,10 @@ for subj_i = 1:numel(preproc_subject_dir)
             
             % smoothing the mask a little bit (with .5 mm FWHM kernel)
             dat_mask = fmri_data(mask, PREPROC.coreg_anat_file);
+            isdiff = compare_space(dat_mask, dat);
+            if isdiff == 1 || isdiff == 2 % diff space, not just diff voxels
+                dat_mask = resample_space(dat_mask, dat, 'nearest');
+            end
             dat_mask = preprocess(dat_mask, 'smooth', .5); % smoothing
             dat.dat = dat.dat .* double(dat_mask.dat==0);
             
