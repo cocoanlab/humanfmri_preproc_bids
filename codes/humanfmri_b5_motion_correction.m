@@ -102,7 +102,7 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC.realign_job = matlabbatch{1};
 
-    PREPROC.r_func_bold_files(do_preproc) = prepend_a_letter(data, ones(size(data)), 'r');
+    PREPROC.r_func_bold_files(do_preproc,1) = prepend_a_letter(data, ones(size(data)), 'r');
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 

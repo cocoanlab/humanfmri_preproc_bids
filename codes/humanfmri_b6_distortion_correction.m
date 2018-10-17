@@ -22,6 +22,11 @@ function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_e
 % - use_sbref       1: Apply topup on sbref
 %                   0: Do not apply topup on sbref
 %
+% :Optional Input:
+%
+% - 'run_num' : 
+% - 'overwritten': do forced save (de)compressed file without response.   
+%
 % :Output:
 % ::
 %     PREPROC.distortion_correction_out          fmap combined
