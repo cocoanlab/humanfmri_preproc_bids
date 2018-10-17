@@ -142,7 +142,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         k = k + 1;
         images_per_session = numel(spm_vol(data{k}));
         
-        if run_i == 1, kk = 2; else, kk = 1; end
+        if run_i == 1 && use_sbref, kk = 2; else, kk = 1; end
         
         PREPROC.nuisance.mvmt_covariates{run_i} = temp_mvmt(kk:(images_per_session+kk-1),:);
         temp_mvmt(1:(images_per_session+kk-1),:) = [];

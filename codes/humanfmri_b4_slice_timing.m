@@ -18,6 +18,15 @@ function PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf, varar
 % - mbf                     multi-band factor, if it's not using mb
 %                           sequence, it should be 1.
 %
+% :Optional Input:
+%
+% - custom_slice_timing    Specification of slice timing. Order(integer
+%                          form) or timing (in milliseconds, float form).
+%                          ex) Order : [1 3 5 7 2 4 6 8]',
+%                              Timing : [0.0000 252.5000 62.5000 315.0000
+% .                                     125.0000 377.5000 190.0000]'
+%                          (If not specified, slice timing is obtained by reading dicom header file)
+%
 % :Output(PREPROC):
 % ::
 %    PREPROC.slice_time
@@ -54,6 +63,8 @@ for i = 1:length(varargin)
         switch varargin{i}
             case {'run_num'}
                 run_num = varargin{i+1};
+            case {'custom_slice_timing'}
+                custom_slice_timing = varargin{i+1};
         end
     end
 end
@@ -65,9 +76,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     print_header('Slice timing correction', a);
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
-    dicomheader = load(PREPROC.dicomheader_files{1});
-
-    PREPROC.slice_time = dicomheader.h.MosaicRefAcqTimes';
+    
+    if exist('custom_slice_timing', 'var')
+        PREPROC.slice_time = custom_slice_timing;
+    else
+        dicomheader = load(PREPROC.dicomheader_files{1});
+        PREPROC.slice_time = dicomheader.h.MosaicRefAcqTimes';
+    end
 
     %% RUNS TO INCLUDE
     do_preproc = true(numel(PREPROC.preproc_func_bold_files),1);
@@ -76,7 +91,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     end
     
     %% DATA
-    slice_timing_job{1}.spm.temporal.st.scans{1} = PREPROC.preproc_func_bold_files(do_preproc); % individual 4d images in cell str
+    slice_timing_job{1}.spm.temporal.st.scans{1} = spm_select('expand', PREPROC.preproc_func_bold_files(do_preproc)); % individual 4d images in cell str
 
     %% 1. nslices
     Vfirst_vol = spm_vol([PREPROC.preproc_func_bold_files{1} ',1']);
@@ -93,7 +108,11 @@ for subj_i = 1:numel(preproc_subject_dir)
     %% 4. so: Slice order
     
     slice_timing_job{1}.spm.temporal.st.so = PREPROC.slice_time;
-    slice_timing_job{1}.spm.temporal.st.refslice = find(PREPROC.slice_time==0, 1, 'first');
+    if ~exist('custom_slice_timing', 'var')
+        slice_timing_job{1}.spm.temporal.st.refslice = find(PREPROC.slice_time==0, 1, 'first');
+    else
+        slice_timing_job{1}.spm.temporal.st.refslice = find(PREPROC.slice_time==min(PREPROC.slice_time), 1, 'first');
+    end
     slice_timing_job{1}.spm.temporal.st.prefix = 'a';
     
     %% Saving slice time correction job
@@ -107,7 +126,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     spm('defaults','fmri');
     spm_jobman('initcfg');
-    spm_jobman('run', {slice_timing_job});
+    spm_jobman('run', slice_timing_job);
 
 end
     
