@@ -24,8 +24,9 @@ function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_e
 %
 % :Optional Input:
 %
-% - 'run_num' : 
-% - 'overwritten': do forced save (de)compressed file without response.   
+% - 'run_num' : Specify run number to apply the distortion corretion.
+%               e.g) 1:9, [1,2,3] ...
+% - 'deletion' : Delete existed (specific) distortion files. 
 %
 % :Output:
 % ::
@@ -57,14 +58,14 @@ function PREPROC = humanfmri_b6_distortion_correction(preproc_subject_dir, epi_e
 % ..
 
 run_num = [];
-do_overwritten = false;
+do_deletion = false;
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             case {'run_num'}
                 run_num = varargin{i+1};
-            case {'overwritten'}
-                do_overwritten = true; %for unzip (gzip)
+            case {'deletion'}
+                do_deletion = true; 
         end
     end
 end
@@ -74,17 +75,32 @@ setenv('PATH', [getenv('PATH') ':/usr/local/fsl/bin']);
 setenv('FSLOUTPUTTYPE','NIFTI_GZ');
 
 %% Load PREPROC
-
 for subj_i = 1:numel(preproc_subject_dir)
 
-    PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'load'); % load PREPROC
+    PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'load'); % load PREPROC       
     
     distort_ap_dat = PREPROC.fmap_nii_files(1,:); % ap
-    distort_pa_dat = PREPROC.fmap_nii_files(2,:); % pa
-    
-    
-    %% Distortion correction
-    
+    distort_pa_dat = PREPROC.fmap_nii_files(2,:); % pa 
+    %% Specify run number to include
+    do_preproc = true(numel(PREPROC.r_func_bold_files),1);
+    if ~isempty(run_num)
+        do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;     
+    end
+    %% delete the already (specified) exist dcr* files & dc_*sbref.nii
+    if do_deletion
+        try
+            if isfield(PREPROC,'dcr_func_bold_files')
+                delete(PREPROC.dcr_func_bold_files{do_preproc});
+            end
+            if isfield(PREPROC,'dc_func_sbref_files')
+                delete(PREPROC.dc_func_sbref_files{do_preproc});
+            end
+        catch
+            warning([PREPROC.subject_code ': Please, check dcr files']);
+            continue
+        end
+    end
+    %% Distortion correction    
     [~,a] = fileparts(preproc_subject_dir{subj_i});
     print_header('disortion correction', a);
     
@@ -131,25 +147,8 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.topup.topup_out = topup_out;
     PREPROC.topup.topup_fieldout = topup_fieldout;
     PREPROC.topup.topup_unwarped = topup_unwarped;
-    
-    %% RUNS TO INCLUDE
-    do_preproc = true(numel(PREPROC.r_func_bold_files),1);
-    if ~isempty(run_num)
-        do_preproc(~ismember(1:numel(PREPROC.r_func_bold_files), run_num)) = false;
-        
-        % delete the already exist dcr* files & dc_*sbref.nii
-        for z = 1:numel(run_num)
-            if exist(PREPROC.dcr_func_bold_files{run_num(z)})
-                delete(PREPROC.dcr_func_bold_files{run_num(z)})
-            end
-            if exist(PREPROC.dc_func_sbref_files{run_num(z)})
-                delete(PREPROC.dc_func_sbref_files{run_num(z)})
-            end
-        end      
-    end
-    
-    %% Applying topup on BOLD files
-    
+  
+    %% Applying topup on BOLD files   
     for i = find(do_preproc)'
         fprintf('\n- Applying topup on run %d/%d', i, numel(PREPROC.r_func_bold_files));
         input_dat = PREPROC.r_func_bold_files{i};
@@ -162,11 +161,9 @@ for subj_i = 1:numel(preproc_subject_dir)
         system(['fslmaths ', PREPROC.dcr_func_bold_files{i}, ' -abs ', PREPROC.dcr_func_bold_files{i}, ' -odt short']);
         
         % unzip
-        if do_overwritten
-            system(['gzip -d -f ' PREPROC.dcr_func_bold_files{i} '.gz']);
-        else
-            system(['gzip -d ' PREPROC.dcr_func_bold_files{i} '.gz']);
-        end
+        system(['gzip -d -f ' PREPROC.dcr_func_bold_files{i} '.gz']);
+        %system(['gzip -d ' PREPROC.dcr_func_bold_files{i} '.gz']);
+
     end
 
     if use_sbref
@@ -183,12 +180,9 @@ for subj_i = 1:numel(preproc_subject_dir)
             % removing spline interpolation neg values by absolute
             system(['fslmaths ', PREPROC.dc_func_sbref_files{i}, ' -abs ', PREPROC.dc_func_sbref_files{i}, ' -odt short']);
             
-            % unzip
-            if do_overwritten
-                system(['gzip -d -f ' PREPROC.dc_func_sbref_files{i} '.gz']);
-            else
-                system(['gzip -d ' PREPROC.dc_func_sbref_files{i} '.gz']);
-            end
+            % unzip           
+            system(['gzip -d -f ' PREPROC.dc_func_sbref_files{i} '.gz']);
+            % system(['gzip -d ' PREPROC.dc_func_sbref_files{i} '.gz']);
         end
     end
     
