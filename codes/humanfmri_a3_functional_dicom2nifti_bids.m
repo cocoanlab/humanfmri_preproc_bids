@@ -173,7 +173,7 @@ for subj_i = 1:numel(subject_codes)
                 dicom_imgs = filenames('*IMA');
             end
             
-            taskname = func_dirs{1}(strfind(func_dirs{1}, 'func_task-')+10:strfind(func_dirs{1}, 'run-')-2);
+            taskname = func_dirs{i}(strfind(func_dirs{i}, 'func_task-')+10:strfind(func_dirs{i}, 'run-')-2);
             
             if use_parfor
                 dicm2nii(dicom_imgs, outdir, 4, 'save_json', 'taskname', taskname, 'use_parfor');
