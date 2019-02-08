@@ -108,6 +108,7 @@ end
 for subj_i = 1:numel(preproc_subject_dir)
     
     subject_dir = preproc_subject_dir{subj_i};
+    PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC    
     [~,a] = fileparts(subject_dir);
     print_header('ICA-AROMA', a);
     
