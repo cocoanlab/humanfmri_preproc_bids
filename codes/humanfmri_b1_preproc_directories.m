@@ -13,6 +13,20 @@ function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, st
 % - study_imaging_dir  the directory information for the study imaging data
 %                      (e.g., study_imaging_dir = '/NAS/data/CAPS2/Imaging')
 %
+% :Optional inputs:
+%
+% - 'run_num'       You can use this optional input, when you want to start
+%                   preproc for data only from some specific runs.
+%                   With 'run_num' option, we recommend using 'no_save'
+%                   option together. Because without no_save, it will
+%                   replace PREPROC.mat with a new mat file in the
+%                   preproc dir. 
+%
+% - 'forced_save'   With this option, this will overwrite PREPROC.mat
+%                   without checking whether the file exists or not
+%
+% - 'no_save'       With this option, this function won't save PREPROC.mat
+%                   in the preproc dir
 %
 % :Output:
 % ::
@@ -40,7 +54,8 @@ function preproc_subject_dir = humanfmri_b1_preproc_directories(subject_code, st
 % ..
 
 run_num = [];
-do_savepreproc_inpreprocdir = false;
+do_save = true;
+forced_save_inpreprocdir = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -48,7 +63,9 @@ for i = 1:length(varargin)
             case {'run_num'}
                 run_num = varargin{i+1};
             case {'forced_save'}
-                do_savepreproc_inpreprocdir = true;
+                forced_save_inpreprocdir = true;
+            case {'no_save'}
+                do_save = false;
         end
     end
 end
@@ -98,8 +115,20 @@ for subj_i = 1:numel(subject_codes)
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % load PREPROC
     
-    if isempty(run_num) || do_savepreproc_inpreprocdir
+    if forced_save_inpreprocdir % with forced save option, it will save it in any case. 
         save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+    else
+        if do_save % without forced save option, it will see whether PREPROC.mat exists in the preproc dir
+            if exist(fullfile(preproc_subject_dir{subj_i}, 'PREPROC.mat'), 'file') % if it exists, it will ask how to proceed.
+                warning('PREPROC.mat already exists in preproc dir.');
+                s = input('How do you want to proceed? (o) overwrite, (Enter) do not save: ', 's'); 
+                if s == 'o'
+                    save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+                end % with "enter" it will do nothing
+            else
+                save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+            end
+        end
     end
     
 end
