@@ -72,7 +72,7 @@ do_wm_csf = false;
 reg_idx = {'24Move','Spike','WM_CSF'}; % defaults
 
 do_specify_img = false;
-fieldname = swr_func_bold_files;
+fieldname = 'swr_func_bold_files';
 for i = 1:numel(varargin)
     if ischar(varargin{i})
         switch varargin{i}

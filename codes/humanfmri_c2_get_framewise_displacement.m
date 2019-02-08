@@ -31,7 +31,7 @@ function PREPROC = humanfmri_c2_get_framewise_displacement(preproc_subject_dir,v
 %1) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','VD')
 %2) humanfmri_c2_get_framewise_displacement(preproc_subject_dir) %default
 %% functional commands
-save_plot = ture;
+save_plot = true;
 FD_id = 'Power';
 FdJenkThr = 0.25;
 for i = 1:length(varargin)
