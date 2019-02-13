@@ -1,12 +1,11 @@
-function PREPROC = humanfmri_c2_get_framewise_displacement(preproc_subject_dir,varargin)
+function humanfmri_c2_get_framewise_displacement(preproc_subject_dir,varargin)
 
 % Compute framewise displacement and apply exculsion criteria and save
 % plots in PREPROC.qcdir
 %
 % :Usage:
-% ::
 %
-%    [results, FD, MeanFd] = getFD(preproc_subject_dir,varargin)
+%  humanfmri_c2_get_framewise_displacement(preproc_subject_dir,varargin)
 %
 % :Inputs:
 %
@@ -23,13 +22,15 @@ function PREPROC = humanfmri_c2_get_framewise_displacement(preproc_subject_dir,v
 %   PREPROC.framewise_displacement
 %   save plots in PREPROC.qcdir
 %
-% Copyright (C) 2018  Suhwan Gim
+% Copyright (C) Feb 2019 Suhwan Gim and Hongji Kim
 %
 % ..
 %
 % :For example
 %1) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','VD')
 %2) humanfmri_c2_get_framewise_displacement(preproc_subject_dir) %default
+%3) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','Power');
+
 %% functional commands
 save_plot = true;
 FD_id = 'Power';
@@ -119,8 +120,6 @@ for subj_i = 1:numel(preproc_subject_dir)
             warning('Check your input, especially, FD''s name (VD, Power)');
     end
     
-    
-    
     %% Exculsion criteria
     
     excul_1 = zeros(1,length(MoveParams));
@@ -148,11 +147,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     if save_plot
         close all;
         Nrow_subplot = length(FD);
+        sz = get(0, 'screensize');
+        set(gcf, 'Position', [sz(3)*.02 sz(4)*.07 sz(3) *.65 sz(4)*.85])
         for run_i=1:length(FD)
             % draw plot
-            set(gcf, 'position', [1           1        1920         1000]);
             subplot(Nrow_subplot,3,[c c+1]);
             plot(FD{run_i});
+           
             % change title color if exceed exclusion criteria
             if excul_1(run_i) | excul_2(run_i)
                 title(sprintf('run %02d',run_i),'color',[1 0 0]);
@@ -190,13 +191,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         set(gcf, 'color', 'w');
         suptitle(char(['FrameWise Displacement: ' PREPROC.subject_code]));
         figdir = PREPROC.qcdir;
-        graphwrite = fullfile(figdir, sprintf('FrameWise_Power_sub_%02d.png',sub_i));
-        pagesetup(gcf);
-        saveas(gcf,graphwrite);
-        pagesetup(gcf);
-        set(gcf, 'position', [1           1        1920         1000]);
+        graphwrite = fullfile(figdir, sprintf('FrameWise_Power_sub%s.png', PREPROC.subject_code(end-2:end)));
+        % pagesetup(gcf);
         saveas(gcf,graphwrite);
     end
+    
     %% output
     results.fd_id = FD_id;
     results.FD = FD;
@@ -210,7 +209,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         'exculsion_2 (more stringent and multi-criteria): 1) mean FD > 0.2mm, 2) (only Jenk''s) 3) large spike (5mm)'};
     %% save PREPROC
     PREPROC.framewise_displacement = results;
-    PREPROC = save_load_PREPROC(subject_dir, 'save'); % load PREPROC
+    save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 end
 
 end

@@ -5,7 +5,7 @@ path_github_toolbox{2} = fullfile('/Volumes/sein/github','cocoanlab'); % for dic
 path_github_toolbox{3} = fullfile('/Volumes/sein/github','external_toolbox/spm12');
 %including canlab tool and cocoan tool, % but it is not recommended 
 for path_i = 1:length(path_github_toolbox); addpath(genpath(path_github_toolbox{path_i})); end
-%% SETUP: preproc_subject_dir and subjecto code 
+%% SETUP: preproc_subject_dir and subject code 
 subj_idx = 1:59; % [1:34, 43:54] or [2,3,4, 5, 21];
 projName = 'semic'; % project name
 [preproc_subject_dir, subject_code] = make_subject_dir_code(study_imaging_dir, projName,subj_idx);
@@ -16,7 +16,7 @@ if length(func_run_nums) == length(func_tasks)
     disp('done');
     run_n = length(func_run_nums); % number of number        
 else
-    warning('Length of these two variables are different. It must be equal');
+    warning('Length of ''func_run_nums'' and ''func_tasks'' are different. It must be equal. Please check.');
 end
 %% SETUP: set the disdaq
 NOfTR=18; % number of TR you want to exclude

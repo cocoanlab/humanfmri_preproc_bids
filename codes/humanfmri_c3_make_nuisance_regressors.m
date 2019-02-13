@@ -12,7 +12,7 @@ function humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,varargin)
 % files.
 %
 % :Usage:
-%   [filename, fullpath] = make_nuisance_mat(PREPROC,varargin)
+%   humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,varargin)
 %
 % :Input:
 % ::
@@ -42,8 +42,8 @@ function humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,varargin)
 %
 %
 % :Exmaples:
-%   - make_nuisance_regressors(PREPROC,'regressors',{'24Move','Spike','WM_CSF'})
-%   - make_nuisance_regressors(PREPROC,'img','swr_func_bold_files')
+%   - humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,'regressors',{'24Move','Spike','WM_CSF'})
+%   - humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,'img','swr_func_bold_files')
 %
 %
 % ..

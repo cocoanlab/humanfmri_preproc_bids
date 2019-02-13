@@ -25,6 +25,6 @@ for i=1:num_sub
     disp(subject_code{1,c}); % for check
     c = c+1;
 end
-fprintf('Total number of subjects is %d\n', length(subject_code));
+fprintf('---------------------------------- \n Total number of subjects is %d\n---------------------------------- \n', length(subject_code));
 preproc_subject_dir = fullfile(study_imaging_dir, 'preprocessed', subject_code);
 end
