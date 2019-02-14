@@ -17,9 +17,11 @@ function PREPROC = humanfmri_b10_ICA_AROMA(preproc_subject_dir, varargin)
 % ** this is still a working version. There might still be errors.
 %
 % :Optional Input:
-%    'ica_aroma_dir'
-%    'anaconda_dir'
-%    'nas'
+%    'ica_aroma_dir', [, dir]
+%    'anaconda_dir', [, dir] 
+%    'tr', [, seconds]: TR seconds (e.g., 'tr',0.46; default)
+%    'overwritten'
+%    'dim', [, number]: number of dimensionlity (e.g., 'dim', 200)
 %
 % :Output(PREPROC):
 % ::
@@ -50,18 +52,33 @@ function PREPROC = humanfmri_b10_ICA_AROMA(preproc_subject_dir, varargin)
 
 % you can change the default for your computer
 ica_aroma_dir = '/Users/clinpsywoo/Dropbox/github/ICA-AROMA';
-anaconda_dir = '/Users/clinpsywoo/anaconda/bin';
-isnas = false;
-
+anaconda_dir = [];
+add_option = [];
+%anaconda_dir = '/Users/clinpsywoo/anaconda/bin';
+TR = 0.46; %defaults
 for i = 1:numel(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             case {'ica_aroma_dir'} % in seconds
                 ica_aroma_dir = varargin{i+1};
             case {'anaconda_dir'}
-                anaconda_dir = varargin{i+1};
-            case {'nas'}
-                isnas=true;
+                anaconda_dir = varargin{i+1};            
+            case {'tr','TR','Tr'}                
+                TR = varargin{i+1};
+                if ~isnumeric(TR) 
+                    error('tr must be single numeric value, check your input');
+                end               
+                if length(TR) == 1
+                    error('tr must be single numeric value, check your input');
+                end
+            case {'overwritten'}
+                add_option = [add_option ' -ow '];
+            case {'dim'}
+                if ~isnumeric(varargin{i+1})
+                    error('number of dimension must be single numeric value, check your input');
+                else
+                    add_option = [add_option '-dim ' num2str(varagin{i+1})];
+                end                
         end
     end
 end
@@ -93,9 +110,14 @@ if compare_space(current_data, ica_mask{1})
     ica_mask{2} = fmri_data(fullfile(ica_aroma_dir, 'mask_edge.nii.gz'));
     ica_mask{3} = fmri_data(fullfile(ica_aroma_dir, 'mask_out.nii.gz'));
     
+    
     for i = 1:numel(ica_mask)
         ica_mask{i} = resample_space(ica_mask{i}, current_data, 'nearest');
         ica_mask{i}.fullpath = fullfile(ica_aroma_dir, ica_mask{i}.image_names);
+        [fpath, fname, fext] = fileparts(ica_mask{i}.image_names);
+        if strcmp(fext, '.gz')
+            ica_mask{i}.image_names = fullfile(fpath, fname);
+        end
         write(ica_mask{i});
     end
     
@@ -130,30 +152,22 @@ for subj_i = 1:numel(preproc_subject_dir)
         [d, f] = fileparts(PREPROC.swr_func_bold_files{run_i});
         mvmt_fname = fullfile(d, ['mvmt_' f '.txt']);
         dlmwrite(mvmt_fname, PREPROC.nuisance.mvmt_covariates{run_i}, 'delimiter','\t');
+                
+
+        % command 
+        py_version = 'python2.7';
+        python_dir = fullfile(anaconda_dir,py_version);
         
-        % === you can freely modified this ica_aroma command and options === % 
-        if isnas == true
-            % command without anaconda environment
-            command = ['python2.7 ' ica_aroma ...
-                ' -in ' PREPROC.swr_func_bold_files{run_i} ...
-                ' -out ' PREPROC.ica_aroma_dir{run_i} ...
-                ' -mc ' mvmt_fname ...
-                ' -m ' PREPROC.preproc_mask ...
-                ' -tr ' num2str(PREPROC.TR) ];
-                % ' -ow ']; - overwritten options
-        else
-            % command with anaconda environment
-            command = [anaconda_dir '/python2.7 ' ica_aroma ...
-                ' -in ' PREPROC.swr_func_bold_files{run_i} ...
-                ' -out ' PREPROC.ica_aroma_dir{run_i} ...
-                ' -mc ' mvmt_fname ...
-                ' -m ' PREPROC.preproc_mask ...
-                ' -tr ' num2str(PREPROC.TR) ];
-                % ' -ow ']; - overwritten options
-        end     
+        command = [python_dir ' ' ica_aroma ...
+            ' -in ' PREPROC.swr_func_bold_files{run_i} ...
+            ' -out ' PREPROC.ica_aroma_dir{run_i} ...
+            ' -mc ' mvmt_fname ...
+            ' -m ' PREPROC.preproc_mask ...
+            ' -tr ' num2str(TR) ...
+            add_option];
+        
         system(command); % run python script
-        
-        system('exit()'); % exit python environment
+               
     end
     
     % moving denoised imaging files into func folder
