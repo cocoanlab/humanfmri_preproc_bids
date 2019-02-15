@@ -112,21 +112,19 @@ for subj_i = 1:numel(subject_codes)
     else
         copyfile([fileparts(PREPROC.func_bold_files{1}) '/*'], PREPROC.preproc_func_dir);
     end
-    
-    save_load_PREPROC(subject_dir, 'save', PREPROC); % load PREPROC
-    
+      
     if forced_save_inpreprocdir % with forced save option, it will save it in any case. 
-        save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+        save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % save PREPROC
     else
         if do_save % without forced save option, it will see whether PREPROC.mat exists in the preproc dir
             if exist(fullfile(preproc_subject_dir{subj_i}, 'PREPROC.mat'), 'file') % if it exists, it will ask how to proceed.
                 warning('PREPROC.mat already exists in preproc dir.');
                 s = input('How do you want to proceed? (o) overwrite, (Enter) do not save: ', 's'); 
                 if s == 'o'
-                    save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+                    save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % save PREPROC
                 end % with "enter" it will do nothing
             else
-                save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % load PREPROC
+                save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC); % save PREPROC
             end
         end
     end
