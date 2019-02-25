@@ -60,9 +60,15 @@ for sub_i = 1:numel(subject_codes)
     raw_fmap_dir = fullfile(raw_dir, 'dicom', 'fmap');
     DC_dir = filenames(fullfile(sub_dicom_dir, ['DISTORTION*']), 'char');
     cd(raw_fmap_dir)
-    
-    for dc_i = 1:2
-        movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir);
+    if size(DC_dir, 1) ==2
+        for dc_i = 1:2
+            movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir);
+        end
+    else
+        rep_num_dc = (size(DC_dir, 1)/2);
+        for dc_i = [rep_num_dc*1, rep_num_dc*2]
+            movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir)
+        end
     end
     
     % run1: FT1
