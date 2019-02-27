@@ -1,6 +1,8 @@
 function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, varargin)
 
 % This function does normalization for the functional data.
+% Additionally, WM and CSF nuisance signals (1 mean signals, 5 principal
+% component signals per each mask) are extracted in this step.
 %
 % :Usage:
 % ::
@@ -24,6 +26,8 @@ function PREPROC = humanfmri_b8_normalization(preproc_subject_dir, use_sbref, va
 %                    images. If you want to skip it, then use this option.
 % - 'no_dc'          if you did not run distortion correction, please use 
 %                    this option.
+% - 'wm_mask_thr' : threshold for WM mask, which is used for extracting WM nuisance signal
+% - 'csf_mask_thr' : threshold for CSF mask, which is used for extracting CSF nuisance signal
 %
 % :Output(PREPROC):
 % :: 
@@ -59,6 +63,8 @@ do_epinorm = false;
 use_mask = false;
 use_dc = true;
 run_num = [];
+wm_mask_thr = 0.9;
+csf_mask_thr = 0.9;
 
 % options
 for i = 1:length(varargin)
@@ -79,6 +85,10 @@ for i = 1:length(varargin)
                 mask = varargin{i+1};
             case {'run_num'}
                 run_num = varargin{i+1};
+            case {'wm_mask_thr'}
+                wm_mask_thr = varargin{i+1};
+            case {'csf_mask_thr'}
+                csf_mask_thr = varargin{i+1};
         end
     end
 end
@@ -215,6 +225,42 @@ for subj_i = 1:numel(preproc_subject_dir)
     canlab_preproc_show_montage(PREPROC.segmentation, seg_png);
     drawnow;
     
+    %% Extracting WM/CSF signals
+    
+    PREPROC.wm_nuisance_mask = fullfile(PREPROC.preproc_anat_dir, 'wm_nuisance_mask.nii');
+    PREPROC.csf_nuisance_mask = fullfile(PREPROC.preproc_anat_dir, 'csf_nuisance_mask.nii');
+    
+    wm_mask = spm_vol(PREPROC.segmentation{2});
+    wm_mask_dat = wm_mask.private.dat(:,:,:);
+    wm_mask_dat = double(wm_mask_dat > wm_mask_thr);
+    wm_mask_dat = spm_erode(wm_mask_dat);
+    wm_mask.fname = PREPROC.wm_nuisance_mask;
+    spm_write_vol(wm_mask, wm_mask_dat);
+    
+    csf_mask = spm_vol(PREPROC.segmentation{3});
+    csf_mask_dat = csf_mask.private.dat(:,:,:);
+    csf_mask_dat = double(csf_mask_dat > csf_mask_thr);
+    csf_mask_dat = spm_erode(csf_mask_dat);
+    csf_mask.fname = PREPROC.csf_nuisance_mask;
+    spm_write_vol(csf_mask, csf_mask_dat);
+    
+    for run_i = find(do_preproc)' %1:numel(PREPROC.wr_func_bold_files)
+        if use_dc
+            wm_dat = fmri_data(PREPROC.dcr_func_bold_files{run_i}, PREPROC.wm_nuisance_mask);
+            csf_dat = fmri_data(PREPROC.dcr_func_bold_files{run_i}, PREPROC.csf_nuisance_mask);
+        else
+            wm_dat = fmri_data(PREPROC.r_func_bold_files{run_i}, PREPROC.wm_nuisance_mask);
+            csf_dat = fmri_data(PREPROC.r_func_bold_files{run_i}, PREPROC.csf_nuisance_mask);
+        end
+        
+        PREPROC.nuisance.wm_mean{run_i, 1} = mean(wm_dat.dat)';
+        PREPROC.nuisance.csf_mean{run_i, 1} = mean(csf_dat.dat)';
+        [~, wm_pc] = pca(wm_dat.dat');
+        [~, csf_pc] = pca(csf_dat.dat');
+        PREPROC.nuisance.wm_princomps{run_i, 1} = wm_pc(:,1:5);
+        PREPROC.nuisance.csf_princomps{run_i, 1} = csf_pc(:,1:5);
+    end
+
     %% warping anatomical image
     clear matlabbatch;
     
