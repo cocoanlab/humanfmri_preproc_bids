@@ -202,10 +202,10 @@ for subj_i = 1:numel(subject_codes)
             disp('Converting 3d images to 4d images...')
             spm_file_merge(nifti_3d((disdaq+1):end), [output_4d_fnames '.nii']);
             
-            delete(fullfile(outdir, [f{1} '*nii']))
+            system(['cd ' outdir '; rm ' f{1} '*nii']);
             
             %% **** change the json file name and save PREPROC ****
-            movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
+            system(['mv ' fullfile(outdir, [f{1} '.json']) ' ' output_4d_fnames '.json']);
             
             if contains(output_4d_fnames, '_bold')
                 PREPROC.func_bold_files{ceil(i/2),1} = filenames([output_4d_fnames '.nii'], 'char');
@@ -219,7 +219,7 @@ for subj_i = 1:numel(subject_codes)
             
             PREPROC.dicomheader_files{i} = [output_dcmheaders_fnames '_dcmheaders.mat'];
             save(PREPROC.dicomheader_files{i}, 'h');
-            delete(fullfile(outdir, 'dcmHeaders.mat'));
+            system(['rm ' fullfile(outdir, 'dcmHeaders.mat')]);
         end 
     end
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC

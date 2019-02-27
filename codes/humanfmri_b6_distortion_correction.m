@@ -158,7 +158,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             ' --method=jac --interp=spline --out=', PREPROC.dcr_func_bold_files{i}]);
         
         % removing spline interpolation neg values by absolute
-        system(['fslmaths ', PREPROC.dcr_func_bold_files{i}, ' -abs ', PREPROC.dcr_func_bold_files{i}, ' -odt short']);
+        system(['fslmaths ', PREPROC.dcr_func_bold_files{i}, ' -abs ', PREPROC.dcr_func_bold_files{i}]);
         
         % unzip
         system(['gzip -d -f ' PREPROC.dcr_func_bold_files{i} '.gz']);
@@ -178,7 +178,7 @@ for subj_i = 1:numel(preproc_subject_dir)
                 ' --method=jac --interp=spline --out=', PREPROC.dc_func_sbref_files{i}]);
             
             % removing spline interpolation neg values by absolute
-            system(['fslmaths ', PREPROC.dc_func_sbref_files{i}, ' -abs ', PREPROC.dc_func_sbref_files{i}, ' -odt short']);
+            system(['fslmaths ', PREPROC.dc_func_sbref_files{i}, ' -abs ', PREPROC.dc_func_sbref_files{i}]);
             
             % unzip           
             system(['gzip -d -f ' PREPROC.dc_func_sbref_files{i} '.gz']);

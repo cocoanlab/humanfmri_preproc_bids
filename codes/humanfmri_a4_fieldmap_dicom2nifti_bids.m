@@ -65,9 +65,11 @@ for subj_i = 1:numel(subject_codes)
     cd(fmap_dir);
     
     dicom_imgs = filenames('*/*IMA', 'absolute');
+    dicom_imgs_pa = dicom_imgs(contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
+    dicom_imgs_ap = dicom_imgs(~contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
     
     %% PA
-    dicm2nii(dicom_imgs(1:2), outdir, 4, 'save_json');
+    dicm2nii(dicom_imgs_pa, outdir, 4, 'save_json');
     out = load(fullfile(outdir, 'dcmHeaders.mat'));
     f = fields(out.h);
     
@@ -86,7 +88,7 @@ for subj_i = 1:numel(subject_codes)
     movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
     
     %% AP
-    dicm2nii(dicom_imgs(3:4), outdir, 4, 'save_json');
+    dicm2nii(dicom_imgs_ap, outdir, 4, 'save_json');
     out = load(fullfile(outdir, 'dcmHeaders.mat'));
     f = fields(out.h);
     

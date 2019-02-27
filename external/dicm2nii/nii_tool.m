@@ -1,45 +1,45 @@
 function varargout = nii_tool(cmd, varargin)
 % Basic function to create, load and save NIfTI file.
 % 
-% rst = NII_TOOL('cmd', para);
+% rst = nii_tool('cmd', para);
 % 
 % To list all command, type
-%  NII_TOOL ?
+%  nii_tool ?
 % 
 % To get help information for each command, include '?' in cmd, for example:
-%  NII_TOOL init?
-%  NII_TOOL('init?')
+%  nii_tool init?
+%  nii_tool('init?')
 % 
 % Here is a list of all command:
 % 
-% NII_TOOL('default', 'version', 1, 'rgb_dim', 1);
-% nii = NII_TOOL('init', img);
-% nii = NII_TOOL('update', nii);
-% NII_TOOL('save', nii, filename, force_3D);
-% hdr = NII_TOOL('hdr', filename);
-% img = NII_TOOL('img', filename_or_hdr);
-% ext = NII_TOOL('ext', filename_or_hdr);
-% nii = NII_TOOL('load', filename_or_hdr);
-% nii = NII_TOOL('cat3D', filenames);
-% NII_TOOL('RGBStyle', 'afni');
+% nii_tool('default', 'version', 1, 'rgb_dim', 1);
+% nii = nii_tool('init', img);
+% nii = nii_tool('update', nii);
+% nii_tool('save', nii, filename, force_3D);
+% hdr = nii_tool('hdr', filename);
+% img = nii_tool('img', filename_or_hdr);
+% ext = nii_tool('ext', filename_or_hdr);
+% nii = nii_tool('load', filename_or_hdr);
+% nii = nii_tool('cat3D', filenames);
+% nii_tool('RGBStyle', 'afni');
 % 
 % Detail for each command is described below.
 % 
-% oldVal = NII_TOOL('default', 'version', 1, 'rgb_dim', 1);
-% oldVal = NII_TOOL('default', struct('version', 1, 'rgb_dim', 1));
+% oldVal = nii_tool('default', 'version', 1, 'rgb_dim', 1);
+% oldVal = nii_tool('default', struct('version', 1, 'rgb_dim', 1));
 % 
 % - Set/query default NIfTI version and/or rgb_dim. To check the setting, run
-% NII_TOOL('default') without other input. The input for 'default' command can
+% nii_tool('default') without other input. The input for 'default' command can
 % be either a struct with fields of 'version' and/or 'rgb_dim', or
-% parameter/value pairs. See NII_TOOL('RGBstyle') for meaning of rgb_dim.
+% parameter/value pairs. See nii_tool('RGBstyle') for meaning of rgb_dim.
 % 
 % Note that the setting will be saved for future use. If one wants to change the
 % settting temporarily, it is better to return the oldVal, and to restore it
 % after done:
 % 
-%  oldVal = NII_TOOL('default', 'version', 2); % set version 2 as default
+%  oldVal = nii_tool('default', 'version', 2); % set version 2 as default
 %  % 'init' and 'save' NIfTI using above version
-%  NII_TOOL('default', oldVal); % restore default setting
+%  nii_tool('default', oldVal); % restore default setting
 % 
 % The default version setting affects 'init' command only. If you 'load' a NIfTI
 % file, modify it, and then 'save' it, the version will be the same as the
@@ -48,7 +48,7 @@ function varargout = nii_tool(cmd, varargin)
 % correctly, regardless of version setting.
 % 
 % 
-% nii = NII_TOOL('init', img, RGB_dim);
+% nii = nii_tool('init', img, RGB_dim);
 % 
 % - Initialize nii struct based on img, normally 3D or 4D array. Most fields in
 % the returned nii.hdr contain default values, and need to be updated based on
@@ -66,37 +66,37 @@ function varargout = nii_tool(cmd, varargin)
 % 
 % Another way to signify RGB/RGBA data is to permute color dim to 8th-dim of img
 % (RGB_dim of 8 can be omitted then). Since NIfTI img can have up to 7 dim,
-% NII_TOOL chooses to store RGB/RGBA in 8th dim. Although this looks lengthy
-% (4th to 7th dim are often all ones), NII_TOOL can deal with up to 7 dim
+% nii_tool chooses to store RGB/RGBA in 8th dim. Although this looks lengthy
+% (4th to 7th dim are often all ones), nii_tool can deal with up to 7 dim
 % without causing any confusion. This is why the returned nii.img always stores
 % RGB in 8th dim.
 % 
 % 
-% nii = NII_TOOL('update', nii);
+% nii = nii_tool('update', nii);
 % 
 % - Update nii.hdr according to nii.img. This is useful if one changes nii.img
 % type or dimension. The 'save' command calls this internally, so it is not
 % necessary to call this before 'save'. A useful case to call 'update' is that
 % one likes to use nii struct without saving it to a file, and 'update' will
-% make nii.hdr.dim correct.
+% make nii.hdr.dim and others correct.
 % 
 % 
-% hdr = NII_TOOL('hdr', filename);
+% hdr = nii_tool('hdr', filename);
 % 
 % - Return hdr struct of the provided NIfTI file. This is useful to check NIfTI
 % hdr, and it is much faster than 'load', especially for .gz file. 
 % 
 % 
-% img = NII_TOOL('img', filename_or_hdr);
+% img = nii_tool('img', filename_or_hdr);
 % 
 % - Return image data in a NIfTI file. The second input can be NIfTI file name,
-% or hdr struct returned by NII_TOOL('hdr', filename).
+% or hdr struct returned by nii_tool('hdr', filename).
 % 
 % 
-% ext = NII_TOOL('ext', filename_or_hdr);
+% ext = nii_tool('ext', filename_or_hdr);
 % 
 % - Return NIfTI extension in a NIfTI file. The second input can be NIfTI file
-% name, or hdr struct returned by NII_TOOL('hdr', filename). The returned ext
+% name, or hdr struct returned by nii_tool('hdr', filename). The returned ext
 % will have field 'edata_decoded' if 'ecode' is of known type, such as dicom
 % (2), text (4 or 6) or Matlab (40).
 % 
@@ -111,26 +111,26 @@ function varargout = nii_tool(cmd, varargin)
 %  nii.ext.ecode = 40; % 40 for Matlab extension
 %  nii.ext.edata = myEdata; % myEdata must be uint8 array
 % 
-% NII_TOOL will take care of rest when you 'save' nii to a file.
+% nii_tool will take care of rest when you 'save' nii to a file.
 % 
 % In case a NIfTI ext causes problem (for example, some FSL builds have problem
 % in reading NIfTI img with ecode>30), one can remove the ext easily:
 % 
-%  nii = NII_TOOL('load', 'file_with_ext.nii'); % load the file with ext
+%  nii = nii_tool('load', 'file_with_ext.nii'); % load the file with ext
 %  nii.ext = []; % or nii = rmfield(nii, 'ext'); % remove ext
-%  NII_TOOL('save', nii, 'file_without_ext.nii'); % save it
+%  nii_tool('save', nii, 'file_without_ext.nii'); % save it
 %
 % 
-% nii = NII_TOOL('load', filename_or_hdr);
+% nii = nii_tool('load', filename_or_hdr);
 % 
 % - Load NIfTI file into nii struct. The returned struct includes NIfTI 'hdr'
 % and 'img', as well as 'ext' if the file contains NIfTI extension.
 % 
-% NII_TOOL returns nii.img with the same data type as stored in the file, while
+% nii_tool returns nii.img with the same data type as stored in the file, while
 % numeric values in hdr are in double precision for convenience.
 % 
 % 
-% NII_TOOL('save', nii, filename, force_3D);
+% nii_tool('save', nii, filename, force_3D);
 % 
 % - Save struct nii into filename. The format of the file is determined by the
 % file extension, such as .img, .nii, .img.gz, .nii.gz etc. If filename is not
@@ -145,21 +145,21 @@ function varargout = nii_tool(cmd, varargin)
 % by 'load' a 4D file, then 'save' it as 3D files. The 3D file names will have
 % 5-digit like '_00001' appended to indicate volume index.
 % 
-% The NIfTI version can be set by NII_TOOL('default'). One can override the
+% The NIfTI version can be set by nii_tool('default'). One can override the
 % default version by specifying it in nii.hdr.version. To convert between
 % versions, load a NIfTI file, specify new version, and save it. For example:
 % 
-%  nii = NII_TOOL('load', 'file_nifti1.nii'); % load version 1 file
+%  nii = nii_tool('load', 'file_nifti1.nii'); % load version 1 file
 %  nii.hdr.version = 2; % force to NIfTI-2
-%  NII_TOOL('save', nii, 'file_nifti2.nii'); % save as version 2 file
+%  nii_tool('save', nii, 'file_nifti2.nii'); % save as version 2 file
 % 
 % Following example shows how to change data type of a nii file:
-%  nii = NII_TOOL('load', 'file_int16.nii'); % load int16 type file
+%  nii = nii_tool('load', 'file_int16.nii'); % load int16 type file
 %  nii.img = single(nii.img); % change data type to single/float32
-%  NII_TOOL('save', nii, 'file_float.nii'); % NII_TOOL will take care of hdr
+%  nii_tool('save', nii, 'file_float.nii'); % nii_tool will take care of hdr
 % 
 % 
-% nii = NII_TOOL('cat3D', files);
+% nii = nii_tool('cat3D', files);
 % 
 % - Concatenate SPM 3D files into a 4D dataset. The input 'files' can be cellstr
 % with file names, or char with wildcards (* or ?). If it is cellstr, the volume
@@ -172,24 +172,24 @@ function varargout = nii_tool(cmd, varargin)
 % 
 % Following example shows how to convert a series of 3D files into a 4D file:
 % 
-%  nii = NII_TOOL('cat3D', './data/fSubj2-0003*.nii'); % load files for series 3 
-%  NII_TOOL('save', nii, './data/fSubj2-0003_4D.nii'); % save as a 4D file
+%  nii = nii_tool('cat3D', './data/fSubj2-0003*.nii'); % load files for series 3 
+%  nii_tool('save', nii, './data/fSubj2-0003_4D.nii'); % save as a 4D file
 % 
 % 
-% oldStyle = NII_TOOL('RGBStyle', 'afni');
+% oldStyle = nii_tool('RGBStyle', 'afni');
 % 
 % - Set/query the method to read/save RGB or RGBA NIfTI file. The default method
-% can be set by NII_TOOL('default', 'rgb_dim', dimN), where dimN can be 1, 3 or
+% can be set by nii_tool('default', 'rgb_dim', dimN), where dimN can be 1, 3 or
 % 4, or 'afni', 'mricron' or 'fsl', as explained below.
 % 
 % The default is 'afni' style (or 1), which is defined by NIfTI standard, but is
 % not well supported by fslview till v5.0.8 or mricron till v20140804.
 % 
-% If the second input is set to 'mricron' (or 3), NII_TOOL will save file using
+% If the second input is set to 'mricron' (or 3), nii_tool will save file using
 % the old RGB fashion (dim 3 for RGB). This works for mricron v20140804 or
 % earlier.
 % 
-% If the second input is set to 'fsl' (or 4), NII_TOOL will save RGB or RGBA
+% If the second input is set to 'fsl' (or 4), nii_tool will save RGB or RGBA
 % layer into 4th dimension, and the file is not encoded as RGB data, but as
 % normal 4D NIfTI. This violates the NIfTI rule, but it seems it is the only way
 % to work for fslview (at least till fsl v5.0.8).
@@ -200,23 +200,23 @@ function varargout = nii_tool(cmd, varargin)
 % The GUI method to convert between different RGB style can be found in
 % nii_viewer. Following shows how to convert other style into fsl style:
 % 
-%  NII_TOOL('RGBStyle', 'afni'); % we are loading afni style RGB
-%  nii = NII_TOOL('load', 'afni_style.nii'); % load RGB file
-%  NII_TOOL('RGBStyle', 'fsl'); % switch to fsl style for later save
-%  NII_TOOL('save', nii, 'fslRGB.nii'); % fsl can read it as RGB
+%  nii_tool('RGBStyle', 'afni'); % we are loading afni style RGB
+%  nii = nii_tool('load', 'afni_style.nii'); % load RGB file
+%  nii_tool('RGBStyle', 'fsl'); % switch to fsl style for later save
+%  nii_tool('save', nii, 'fslRGB.nii'); % fsl can read it as RGB
 % 
 % Note that, if one wants to convert fsl style (non-RGB file by NIfTI standard)
 % to other styles, an extra step is needed to change the RGB dim from 4th to 8th
 % dim before 'save':
 % 
-%  nii = NII_TOOL('load', 'fslStyleFile.nii'); % it is normal NIfTI
+%  nii = nii_tool('load', 'fslStyleFile.nii'); % it is normal NIfTI
 %  nii.img = permute(nii.img, [1:3 5:8 4]); % force it to be RGB data
-%  NII_TOOL('RGBStyle', 'afni'); % switch to NIfTI RGB style if needed
-%  NII_TOOL('save', nii, 'afni_RGB.nii'); % now AFNI can read it as RGB
+%  nii_tool('RGBStyle', 'afni'); % switch to NIfTI RGB style if needed
+%  nii_tool('save', nii, 'afni_RGB.nii'); % now AFNI can read it as RGB
 % 
-% Also note that the setting by NII_TOOL('RGBStyle') is effective only for
+% Also note that the setting by nii_tool('RGBStyle') is effective only for
 % current Matlab session. If one clears all or starts a new Matlab session, the
-% default style by NII_TOOL('default') will take effect.
+% default style by nii_tool('default') will take effect.
 %  
 % See also NII_VIEWER, NII_XFORM, DICM2NII
 
@@ -226,7 +226,7 @@ function varargout = nii_tool(cmd, varargin)
 
 % History (yymmdd)
 % 150109 Write it based on Jimmy Shen's NIfTI tool (xiangrui.li@gmail.com)
-% 150202 Include renamed pigz files for Windows to trick Matlab Central
+% 150202 Include renamed pigz files for Windows
 % 150203 Fix closeFile and deleteTmpFile order
 % 150205 Add hdr.machine: needed for .img fopen
 % 150208 Add 4th input for 'save', allowing to save SPM 3D files
@@ -238,7 +238,7 @@ function varargout = nii_tool(cmd, varargin)
 % 150517 func_handle: provide a way to use gunzipOS etc from outside
 % 150617 auto detect rgb_dim 1&3 for 'load' etc using ChrisR method
 % 151025 Change subfunc img2datatype as 'update' for outside access
-% 151109 Include dd.win (exe) from WinAVR-20100110 for partial gz unzip
+% 151109 Include dd.exe from WinAVR-20100110 for partial gz unzip
 % 151205 Partial gunzip: fix fname with space & unknown pigz | dd error.
 % 151222 Take care of img for intent_code 2003/2004: anyone uses it?
 % 160110 Use matlab pref method to replace para file.
@@ -250,13 +250,17 @@ function varargout = nii_tool(cmd, varargin)
 % 161025 Make included linux pigz executible; fix "dd" for windows.
 % 161031 gunzip_mem(), nii_bytes() for hdr/ext read: read uint8 then parse;
 %        Replace hdr.machine with hdr.swap_endian.
-% 170202 check_gzip/check_dd: cd .. if m_dir is pwd, so get full path for m_dir
 % 170212 Extract decode_ext() from 'ext' cmd so call it in 'update' cmd.
 % 170215 gunzipOS: use -c > rather than copyfile for performance.
 % 170322 gzipOS: stop using background gz to avoid file not exist error.
 % 170410 read_img(): turn off auto RGB dim detection, and use rgb_dim.
 % 170714 'save': force to version 2 if img dim exceeds 2^15-1.
 % 170716 Add functionSignatures.json file for tab auto-completion.
+% 171031 'LocalFunc' makes eaiser to call local functions.
+% 171206 Allow file name ext other than .nii, .hdr, .img.
+% 180104 check_gzip: add /usr/local/bin to PATH for unix if needed.
+% 180119 use jsystem for better speed.
+% 180710 bug fix for cal_max/cal_min in 'update'.
 
 persistent C para; % C columns: name, length, format, value, offset
 if isempty(C)
@@ -274,7 +278,7 @@ if any(cmd=='?'), subFuncHelp(mfilename, cmd); return; end
 
 if strcmpi(cmd, 'init')
     if nargin<2, error('nii_tool(''%s'') needs second input', cmd); end
-    for i = 1:size(C,1), nii.hdr.(C{i,1}) = C{i,4}; end
+    nii.hdr = cell2struct(C(:,4), C(:,1));
     nii.img = varargin{1};
     if numel(size(nii.img))>8
         error('NIfTI img can have up to 7 dimension');
@@ -297,9 +301,7 @@ elseif strcmpi(cmd, 'save')
     % Check file name to save
     if nargin>2
         fname = varargin{2};
-        if numel(fname)<5 || ~ischar(fname)
-            error('Invalid name for NIfTI file: %s', fname);
-        end
+        if ~ischar(fname), error('Invalid name for NIfTI file: %s', fname); end
     elseif isfield(nii.hdr, 'file_name')
         fname = nii.hdr.file_name;
     else
@@ -618,10 +620,17 @@ elseif strcmpi(cmd, 'update') % old img2datatype subfunction
     nii.hdr.bitpix = para.bitpix(ind);
     nii.hdr.dim = [ndim dim];
     
-    if nii.hdr.sizeof_hdr == 348
-        nii.hdr.glmax = round(double(max(nii.img(:)))); % we may remove these
-        nii.hdr.glmin = round(double(min(nii.img(:))));
+    mx = double(max(nii.img(:)));
+    mn = double(min(nii.img(:)));
+    if nii.hdr.cal_min>mx || nii.hdr.cal_max<mn % reset wrong value
+        nii.hdr.cal_min = 0;
+        nii.hdr.cal_max = 0;
     end
+    
+    if nii.hdr.sizeof_hdr == 348
+        nii.hdr.glmax = round(mx); % we may remove these
+        nii.hdr.glmin = round(mn);
+    end    
     
     if isfield(nii, 'ext')
         try swap = nii.hdr.swap_endian; catch, swap = false; end
@@ -630,8 +639,10 @@ elseif strcmpi(cmd, 'update') % old img2datatype subfunction
     
     varargout{1} = nii;
     if nargout>1, varargout{2} = fmt; end
-elseif strcmpi(cmd, 'func_handle') % make a local function avail to outside 
+elseif strcmp(cmd, 'func_handle') % make a local function avail to outside 
     varargout{1} = str2func(varargin{1});
+elseif strcmp(cmd, 'LocalFunc') % call  local function from outside 
+    [varargout{1:nargout}] = feval(varargin{:});
 else
     error('Invalid command for nii_tool: %s', cmd);
 end
@@ -651,7 +662,7 @@ if niiVer == 1
     C = {
     % name              len  format     value           offset
     'sizeof_hdr'        1   'int32'     348             0
-    'data_type'         10  'char*1'    ''              4                                          
+    'data_type'         10  'char*1'    ''              4
     'db_name'           18  'char*1'    ''              14
     'extents'           1   'int32'     16384           32
     'session_error'     1   'int16'     0               36
@@ -777,13 +788,7 @@ persistent cmd; % command to gzip
 if isempty(cmd)
     cmd = check_gzip('gzip');
     if ischar(cmd)
-        if ispc
-            cmd = @(nam) sprintf('%s -nf "%s"', cmd, nam);
-            %cmd = @(nam) sprintf('start "" /B %s -nf "%s"', cmd, nam);%background
-        else
-            cmd = @(nam) sprintf('%s -nf "%s"', cmd, nam);
-            %cmd = @(nam) sprintf('%s -nf "%s" &', cmd, nam); % background
-        end
+        cmd = @(nam){cmd '-nf' nam};
     elseif islogical(cmd) && ~cmd
         fprintf(2, ['None of system pigz, gzip or Matlab gzip available. ' ...
             'Files are not compressed into gz.\n']);
@@ -795,8 +800,8 @@ if islogical(cmd)
     return;
 end
 
-[err, str] = system(cmd(fname));
-if err
+[err, str] = jsystem(cmd(fname));
+if err && ~exist([fname '.gz'], 'file')
     try
         gzip(fname); deleteFile(fname);
     catch
@@ -804,68 +809,55 @@ if err
     end
 end
 
-% Deal with pigz/gzip on path or in nii_tool folder, and matlab gzip/gunzip
+%% Deal with pigz/gzip on path or in nii_tool folder, and matlab gzip/gunzip
 function cmd = check_gzip(gz_unzip)
-m_dir = fileparts(which(mfilename));
+m_dir = fileparts(mfilename('fullpath'));
 % away from pwd, so use OS pigz if both exist. Avoid error if pwd changed later
 if strcmpi(pwd, m_dir), cd ..; clnObj = onCleanup(@() cd(m_dir)); end
+if isunix
+    pth1 = getenv('PATH');
+    if isempty(strfind(pth1, '/usr/local/bin'))
+        pth1 = [pth1 ':/usr/local/bin'];
+        setenv('PATH', pth1);
+    end
+end
 
 % first, try system pigz
-[err, ~] = system('pigz -V 2>&1');
+[err, ~] = jsystem({'pigz' '-V'});
 if ~err, cmd = 'pigz'; return; end
 
 % next, try pigz included with nii_tool
+cmd = [m_dir '/pigz'];
 if ismac % pigz for mac is not included in the package
     if strcmp(gz_unzip, 'gzip')
         fprintf(2, [' Please install pigz for fast compression: ' ...
             'http://macappstore.org/pigz/\n']);
     end
-elseif ispc % rename back pigz for Windows. Renamed to trick Matlab Central
-    try %#ok<*TRYNC>
-        fname = [m_dir '\pigz.win'];
-        if exist(fname, 'file')
-            movefile(fname, [m_dir '\pigz.exe'], 'f');
-        end
-        fname = [m_dir '\pthreadGC2.win'];
-        if exist(fname, 'file')
-            movefile(fname, [m_dir '\pthreadGC2.dll'], 'f');
-        end
-    end
-else % linux
-    [st, val] = fileattrib([m_dir '/pigz']);
-    if st && ~val.UserExecute, fileattrib([m_dir '/pigz'], '+x'); end
+elseif isunix % linux
+    [st, val] = fileattrib(cmd);
+    if st && ~val.UserExecute, fileattrib(cmd, '+x'); end
 end
 
-cmd = fullfile(m_dir, 'pigz');
-cmd = ['"' cmd '"'];
-[err, ~] = system([cmd ' -V 2>&1']);
+[err, ~] = jsystem({cmd '-V'});
 if ~err, return; end
 
 % Third, try system gzip/gunzip
-[err, ~] = system([gz_unzip ' -V 2>&1']); % gzip/gunzip on system path?
+[err, ~] = jsystem({gz_unzip '-V'}); % gzip/gunzip on system path?
 if ~err, cmd = gz_unzip; return; end
 
-% Lastly, try Matlab gzip/gunzip
-if isempty(which(gz_unzip)) || ~usejava('jvm')
-    cmd = false; % none of de/compress tools available
-    return;
-end 
-cmd = true; % use slower matlab gzip.m/gunzip.m
+% Lastly, use Matlab gzip/gunzip if java avail
+cmd = usejava('jvm');
 
 %% check dd command, return empty if not available
 function dd = check_dd
-[err, ~] = system('dd --version 2>&1');
+m_dir = fileparts(mfilename('fullpath'));
+if strcmpi(pwd, m_dir), cd ..; clnObj = onCleanup(@() cd(m_dir)); end
+[err, ~] = jsystem({'dd' '--version'});
 if ~err, dd = 'dd'; return; end % dd with linix/mac, and maybe windows
 
 if ispc % rename it as exe
-    m_dir = fileparts(which(mfilename));
-    if strcmpi(pwd, m_dir), cd ..; clnObj = onCleanup(@() cd(m_dir)); end
-    fname = [m_dir '\dd.win'];
-    if exist(fname, 'file') % first time after download
-        try movefile(fname, [m_dir '\dd.exe'], 'f'); end
-    end
-    dd = ['"' fullfile(m_dir, 'dd') '"'];
-    [err, ~] = system([dd ' --version 2>&1']);
+    dd = [m_dir '\dd'];
+    [err, ~] = jsystem({dd '--version'});
     if ~err, return; end
 end
 dd = '';
@@ -876,14 +868,14 @@ persistent cmd dd pth uid; % command to run gupzip, dd tool, and temp_path
 if isempty(cmd)
     cmd = check_gzip('gunzip'); % gzip -dc has problem in PC
     if ischar(cmd)
-        cmd = @(nam)sprintf('%s -nfdc "%s" ', cmd, nam); % f for overwrite
+        cmd = @(nam)sprintf('"%s" -nfdc "%s" ', cmd, nam); % f for overwrite
     elseif islogical(cmd) && ~cmd
         cmd = [];
         error('None of system pigz, gunzip or Matlab gunzip is available');
     end
     dd = check_dd;
     if ~isempty(dd)
-        dd = @(n,out)sprintf('| %s count=%g of="%s"', dd, ceil(n/512), out);
+        dd = @(n,out)sprintf('| "%s" count=%g of="%s"', dd, ceil(n/512), out);
     end
     
     if ispc % matlab tempdir could be slow due to cd in and out
@@ -891,13 +883,15 @@ if isempty(cmd)
         if isempty(pth), pth = pwd; end
     else
         pth = getenv('TMP');
-        if isempty(pth), pth = '/tmp'; end
+        if isempty(pth), pth = getenv('TMPDIR'); end
+        if isempty(pth), pth = '/tmp'; end % last resort
     end
     uid = @()sprintf('_%s_%03x', datestr(now, 'yymmddHHMMSSfff'), randi(999));
 end
 
 if islogical(cmd)
     outName = gunzip(fname, pth);
+    outName = outName{1};
     return;
 end
 
@@ -917,6 +911,7 @@ if ~isempty(dd) && nargin>1 && ~isinf(nByte) % unzip only part of data
 end
 
 [err, str] = system([cmd(fname) '> "' outName '"']);
+% [err, str] = jsystem({'pigz' '-nfdc' fname '>' outName});
 if err
     try
     	outName = gunzip(fname, pth);
@@ -997,7 +992,7 @@ for i = 1:numel(ext)
         fclose(fid1);
         deleteMat = onCleanup(@() deleteFile(tmp)); % delete temp file after done
         ext(i).edata_decoded = load(tmp); % load into struct
-    elseif ext(i).ecode == 6 % plain text
+    elseif any(ext(i).ecode == [4 6 32]) % 4 AFNI, 6 plain text, 32 CIfTI
         str = char(ext(i).edata(:)');
         if isempty(strfind(str, 'dicm2nii.m'))
             ext(i).edata_decoded = deblank(str);
@@ -1012,9 +1007,14 @@ for i = 1:numel(ext)
                 if isempty(a), continue; end
                 try
                     eval(['ss.' a]); % put all into struct
-                catch me
-                    fprintf(2, '%s\n', me.message);
-                    fprintf(2, 'Unrecognized text: %s\n', a);
+                catch
+                    try
+                        a = regexp(a, '(.*?)\s*=\s*(.*?);', 'tokens', 'once');
+                        ss.(a{1}) = a{2};
+                    catch me
+                        fprintf(2, '%s\n', me.message);
+                        fprintf(2, 'Unrecognized text: %s\n', a);
+                    end
                 end
             end
             flds = fieldnames(ss); % make all vector column
@@ -1024,8 +1024,6 @@ for i = 1:numel(ext)
             end
             ext(i).edata_decoded = ss;
         end
-    elseif ext(i).ecode == 4 % AFNI
-        ext(i).edata_decoded = deblank(char(ext(i).edata(:))');
     elseif ext(i).ecode == 2 % dicom
         tmp = [tempname '.dcm'];
         fid1 = fopen(tmp, 'W');
@@ -1048,7 +1046,6 @@ dim = hdr.dim(2:8);
 dim(hdr.dim(1)+1:7) = 1; % avoid some error in file
 dim(dim<1) = 1;
 valpix = para.valpix(ind);
-n = prod(dim); % num of voxels
 
 fname = nii_name(hdr.file_name, '.img'); % in case of .hdr/.img pair
 fid = fopen(fname);
@@ -1060,6 +1057,13 @@ if isequal(sig, [31 139]) % .gz
     fid = fopen(fname);
 end
 
+% if ~exist('cln', 'var') && valpix==1 && ~hdr.swap_endian
+%     m = memmapfile(fname, 'Offset', hdr.vox_offset, ...
+%         'Format', {para.format{ind}, dim, 'img'});
+%     nii = m.Data;
+%     return;
+% end
+
 if hdr.swap_endian % switch between LE and BE
     [~, ~, ed] = fopen(fid); % default endian: almost always ieee-le
     fclose(fid);
@@ -1070,7 +1074,7 @@ if hdr.swap_endian % switch between LE and BE
 end
 
 fseek(fid, hdr.vox_offset, 'bof');
-img = fread(fid, n*valpix, ['*' para.format{ind}]); % * to keep original class
+img = fread(fid, prod(dim)*valpix, ['*' para.format{ind}]); % * to keep original class
 fclose(fid);
 
 if any(hdr.datatype == [128 511 2304]) % RGB or RGBA
@@ -1100,17 +1104,13 @@ end
 
 %% Return requested fname with ext, useful for .hdr and .img files
 function fname = nii_name(fname, ext)
-[~, f, e] = fileparts(fname);
-n = numel(fname);
-if strcmpi(e, '.gz')
-    n = n - 3; % 3 is numel('.gz')
-    [~, ~, e] = fileparts(f); % .nii/.hdr/.img
+if strcmpi(ext, '.img')
+    i = regexpi(fname, '.hdr(.gz)?$');
+    if ~isempty(i), fname(i(end)+(0:3)) = ext; end
+elseif strcmpi(ext, '.hdr') 
+    i = regexpi(fname, '.img(.gz)?$');
+    if ~isempty(i), fname(i(end)+(0:3)) = ext; end
 end
-if strcmpi(e, '.nii') || strcmpi(e, ext), return; end
-if ~strcmpi(e, '.hdr') && ~strcmpi(e, '.img')
-    error(['Invalid NIfTI file name: ' fname]); 
-end
-fname(n+(-3:0)) = ext; % if not return or error, change it
 
 %% Read NIfTI file as bytes, gunzip if needed, but ignore endian
 function [b, fname] = nii_bytes(fname, nByte)
@@ -1125,82 +1125,41 @@ if isequal(b(1:2), [31 139]) % gz, tgz file
 end
 
 %% subfunction: get help for a command
-function subFuncHelp(mfile, subcmd)
-fid = fopen(which(mfile));
-if fid<1, error(' %s not exists.', mfile); end
-clnObj = onCleanup(@()fclose(fid));
-while 1 % find first % line
-    ln = strtrim(fgetl(fid));
-    if feof(fid), fprintf(2, ' No help text found.\n'); return; end
-    if ~isempty(ln) && ln(1) == '%', break; end
-end
+function subFuncHelp(mfile, cmd)
+str = fileread(which(mfile));
+i = regexp(str, '\n\s*%', 'once'); % start of 1st % line
+str = regexp(str(i:end), '.*?(?=\n\s*[^%])', 'match', 'once'); % help text
+str = regexprep(str, '\r?\n\s*%', '\n'); % remove '\r' and leading %
 
-cr = char(10); %#ok<*CHARTEN>
-str = [ln(2:end) cr];
-while 1
-    ln = strtrim(fgetl(fid));
-    if isempty(ln) || ln(1) ~= '%', break; end % first non % line
-    str = [str ln(2:end) cr];
-end
+dashes = regexp(str, '\n\s*-{1,4}\s+') + 1; % lines starting with 1 to 4 -
+if isempty(dashes), disp(str); return; end % Show all help text
 
-% detect topic line before formating the str: try each in order
-topicChar = [cr ' - ']; % we rely on this for each topic: see help
-str = strrep(str, [cr ' -- '], topicChar); % ' -- ' is also fine
-ind = strfind(str, topicChar);
-if isempty(ind), disp(str); return; end % no topicChar found. Show all help text
-
-fakeChar = repmat(char(1), 1, numel(topicChar));
-str = strrep(str, topicChar, fakeChar); % will restore later
-str = strrep(str, upper(mfile), mfile);
-
-% format for reliable syntax and paragraph detection (order is important):
-cr1 = [cr ' ']; % cr with a space
-chars = {[mfile '  ']   [mfile ' ']; % reduce multiple space after mfile to one
-         [mfile ' (']   [mfile '(']; % remove space between mfile and (
-         [mfile '( ']   [mfile '(']; % remove space after mfile(
-         [cr '    ']    [cr char(9)]; % replace 4 space with tab for beauty
-         cr1            cr; % remove space after cr
-         };
-for i = 1:size(chars, 1)
-    while ~isempty(strfind(str, chars{i,1}))
-        str = strrep(str, chars{i,1}, chars{i,2}); % regexprep error in Octave
-    end
-end
-str = strrep(str, cr, cr1); % restore one space after cr
-
-dashes = strfind(str, fakeChar); % index for ' - ' after formating
-str = strrep(str, fakeChar, topicChar); % restore ' - '
-
-prgrfs = strfind(str, [cr1 cr1]); % double blank lines
+prgrfs = regexp(str, '(\n\s*){2,}'); % blank lines
 nTopic = numel(dashes);
-topics = ones(1, nTopic+1); % syntax 'mfile(' before each '-' line
+topics = ones(1, nTopic+1);
 for i = 1:nTopic
-    ind = strfind(str(1:dashes(i)), [mfile '(']); % syntax before ' - '
+    ind = regexpi(str(1:dashes(i)), [mfile '\s*\(']); % syntax before ' - '
     if isempty(ind), continue; end % no syntax before ' - ', assume start with 1
     ind = find(prgrfs < ind(end), 1, 'last'); % previous paragraph
     if isempty(ind), continue; end
     topics(i) = prgrfs(ind) + 1; % start of this topic 
 end
-topics(nTopic+1) = numel(str); % set last topic to the end
+topics(end) = numel(str); % end of last topic
 
-cmd = strrep(subcmd, '?', ''); % remove ? in case it is in subcmd
+cmd = strrep(cmd, '?', ''); % remove ? in case it is in subcmd
 if isempty(cmd) % help for main function
-    disp(str(1:topics(1))); % text before first topic
+    disp(str(1:topics(1))); % subfunction list before first topic
     return;
 end
 
-% find a topic with cmd syntax, and the syntax is prior to ' - '
-cmd = sprintf('%s(''%s''', mfile, cmd);
+expr = [mfile '\s*\(\s*''' cmd ''''];
 for i = 1:nTopic
-    ind = strfind(lower(str(topics(i):dashes(i))), lower(cmd));
-    if ~isempty(ind) % found the syntax in the topic
-        disp(str(topics(i):topics(i+1)));
-        return;
-    end
+    if isempty(regexpi(str(topics(i):dashes(i)), expr, 'once')), continue; end
+    disp(str(topics(i):topics(i+1)));
+    return;
 end
 
-% if we reach here, no subcmd found in syntax
-fprintf(2, ' Unknown command for %s: %s\n', mfile, subcmd);
+fprintf(2, ' Unknown command for %s: %s\n', mfile, cmd); % no cmd found
 
 %% gunzip bytes in memory if possible. 2nd/3rd input for fallback file gunzip
 % Trick: try-block avoid error for partial file unzip.
@@ -1208,11 +1167,14 @@ function bytes = gunzip_mem(gz_bytes, fname, nByte)
 bytes = [];
 try
     bais = java.io.ByteArrayInputStream(gz_bytes);
-    gzis = java.util.zip.GZIPInputStream(bais);
+    try, gzis = java.util.zip.GZIPInputStream(bais); %#ok<*NOCOM>
+    catch, try, gzis = java.util.zip.InflaterInputStream(bais); catch me; end
+    end
     buff = java.io.ByteArrayOutputStream;
-    try org.apache.commons.io.IOUtils.copy(gzis, buff); end
+    try org.apache.commons.io.IOUtils.copy(gzis, buff); catch me; end
     gzis.close;
-    bytes = typecast(buff.toByteArray, 'uint8'); % faster than uint8()
+    bytes = typecast(buff.toByteArray, 'uint8');
+    if isempty(bytes), error(me.message); end
 catch
     if nargin<3 || isempty(nByte), nByte = inf; end
     if nargin<2 || isempty(fname)
@@ -1224,7 +1186,7 @@ catch
         fclose(fid);
     end
     
-    try
+    try %#ok<*TRYNC>
         fname = gunzipOS(fname, nByte);
         fid = fopen(fname);
         bytes = fread(fid, nByte, '*uint8');
@@ -1237,5 +1199,21 @@ end
 function deleteFile(fname)
 if ispc, system(['start "" /B del "' fname '"']);
 else, system(['rm "' fname '" &']);
+end
+
+%% faster than system: based on https://github.com/avivrosenberg/matlab-jsystem
+function [err, out] = jsystem(cmd)
+% cmd is cell str, no quotation marks needed for file names with space.
+try
+    pb = java.lang.ProcessBuilder(cmd);
+    pb.redirectErrorStream(true); % ErrorStream to InputStream
+    process = pb.start();
+    scanner = java.util.Scanner(process.getInputStream).useDelimiter('\A');
+    if scanner.hasNext(), out = char(scanner.next()); else, out = ''; end
+    err = process.exitValue; % err = process.waitFor() may hang
+    if err, error('java.lang.ProcessBuilder error'); end
+catch % fallback to system() if java fails like for Octave
+    cmd = regexprep(cmd, '.+? .+', '"$0"'); % double quotes if with middle space
+    [err, out] = system(sprintf('%s ', cmd{:}));
 end
 %%

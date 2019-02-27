@@ -81,14 +81,14 @@ for subj_i = 1:numel(subject_codes)
     for i = 1:numel(filetype)
         source_file = fullfile(outdir, [info.source '.' filetype{i}]);
         target_file = fullfile(outdir, [info.target '.' filetype{i}]);
-        movefile(source_file, target_file);
+        system(['mv ' source_file ' ' target_file]);
         
         eval(['PREPROC.anat_' filetype{i} '_files = {''' target_file '''};']);
     end
     
     eval(['h = out.h.' info.source ';']);
     save(fullfile(outdir, 'anat_dcm_headers.mat'), 'h');
-    delete(fullfile(outdir, 'dcmHeaders.mat'));
+    system(['rm ' fullfile(outdir, 'dcmHeaders.mat')]);
     
     save_load_PREPROC(PREPROC.subject_dir, 'save', PREPROC); % save PREPROC
 end
