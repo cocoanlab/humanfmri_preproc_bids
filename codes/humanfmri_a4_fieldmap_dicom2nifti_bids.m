@@ -65,8 +65,8 @@ for subj_i = 1:numel(subject_codes)
     cd(fmap_dir);
     
     dicom_imgs = filenames('*/*IMA', 'absolute');
-    dicom_imgs_pa = dicom_imgs(contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
-    dicom_imgs_ap = dicom_imgs(~contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
+    dicom_imgs_pa = dicom_imgs(~contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
+    dicom_imgs_ap = dicom_imgs(contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
     
     %% PA
     dicm2nii(dicom_imgs_pa, outdir, 4, 'save_json');
