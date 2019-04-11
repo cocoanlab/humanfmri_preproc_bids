@@ -79,8 +79,8 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'load'); % load PREPROC       
     
-    distort_ap_dat = PREPROC.fmap_nii_files(1,:); % ap
-    distort_pa_dat = PREPROC.fmap_nii_files(2,:); % pa 
+    distort_ap_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-ap'), :);
+    distort_pa_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-pa'), :);
     %% Specify run number to include
     do_preproc = true(numel(PREPROC.r_func_bold_files),1);
     if ~isempty(run_num)
