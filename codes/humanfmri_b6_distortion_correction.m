@@ -143,12 +143,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     topup_config = '/usr/local/fsl/src/topup/flirtsch/b02b0.cnf';
     system(['topup --imain=', PREPROC.distortion_correction_out, ' --datain=', dc_param, ' --config=', topup_config, ' --out=', topup_out, ...
         ' --fout=', topup_fieldout, ' --iout=', topup_unwarped]);
-    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' topup_unwarped '.nii.gz']);
-    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' topup_unwarped '.nii.gz']);
     
     PREPROC.topup.topup_out = topup_out;
     PREPROC.topup.topup_fieldout = topup_fieldout;
     PREPROC.topup.topup_unwarped = topup_unwarped;
+    
+    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' PREPROC.distortion_correction_out]);
+    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' PREPROC.topup.topup_unwarped '.nii.gz']);
     
     fprintf('Take snapshot of fieldmap images before/after TOPUP.\n');
     if strcmpi(epi_enc_dir, 'ap')
