@@ -1,4 +1,4 @@
-function move_dicom_to_raw(subject_code, study_imaging_dir, run_n)
+function move_dicom_to_raw(subject_code, study_imaging_dir, run_n, varargin)
 % Moving dicom file to RAW directory
 
 % The function move dicom files to corresponding directories in raw
@@ -20,6 +20,13 @@ function move_dicom_to_raw(subject_code, study_imaging_dir, run_n)
 % - run_n              number of runs: Previously decided in Setting.
 %                      Equal to length of 'func_run_nums'
 %
+% :Optional inputs:
+%
+% - 'copy'          If you want to copy dicom files instead of moving it,
+%                   you can put 'copy' option to this function.
+%                   Without 'copy' option, as a default, it will
+%                   move dicom files from dicom directory to raw directory.
+
 % ..
 %     Author and copyright information:
 %
@@ -38,6 +45,18 @@ function move_dicom_to_raw(subject_code, study_imaging_dir, run_n)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
+
+move_files = true;
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'copy'}
+                move_files = false;
+        end
+    end
+end
+
 
 if ~iscell(subject_code)
     subject_codes{1} = subject_code;
@@ -60,7 +79,12 @@ for sub_i = 1:numel(subject_codes)
             error('There is no T1 directory. Please check.')
         end
     else
-        movefile(T1_dir,raw_anat_dir);
+        if move_files == true
+            movefile(T1_dir,raw_anat_dir);
+        else % copy instead of move
+            fprintf('\ncopying ...\nSource: %s\nDestination: %s\n', T1_dir, raw_anat_dir);
+            system(['cp -r ' T1_dir ' ' raw_anat_dir]);
+        end
     end
     
     % fmap
@@ -74,12 +98,22 @@ for sub_i = 1:numel(subject_codes)
     else
         if size(DC_dir, 1) ==2
             for dc_i = 1:2
-                movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir);
+                if move_files == true
+                    movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir);
+                else % copy instead of move
+                    fprintf('\ncopying ...\nSource: %s\nDestination: %s\n', deblank(DC_dir(dc_i,1:end)), raw_fmap_dir);
+                    system(['cp -r ' deblank(DC_dir(dc_i,1:end)) ' ' raw_fmap_dir]);
+                end
             end
         else
             rep_num_dc = (size(DC_dir, 1)/2);
             for dc_i = [rep_num_dc*1, rep_num_dc*2]
-                movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir)
+                if move_files == true
+                    movefile(deblank(DC_dir(dc_i,1:end)), raw_fmap_dir)
+                else
+                    fprintf('\ncopying ...\nSource: %s\nDestination: %s\n', deblank(DC_dir(dc_i,1:end)), raw_fmap_dir);
+                    system(['cp -r ' deblank(DC_dir(dc_i,1:end)) ' ' raw_fmap_dir]);
+                end
             end
         end
     end
@@ -90,14 +124,24 @@ for sub_i = 1:numel(subject_codes)
         dicom_run_dir = filenames(fullfile(sub_dicom_dir, [num2str(run_i), '*']), 'char');
         if size(dicom_run_dir, 1) == 2
             for mb_i = 1:2
-                cd(deblank(raw_run_dir(mb_i,:)));
-                movefile(deblank(dicom_run_dir(mb_i,1:end)));
+                if move_files == true
+                    cd(deblank(raw_run_dir(mb_i,:)));
+                    movefile(deblank(dicom_run_dir(mb_i,1:end)));
+                else % copy instead of move
+                    fprintf('\ncopying ...\nSource: %s\nDestination: %s\n', dicom_run_dir(mb_i,:), raw_run_dir(mb_i,:));
+                    system(['cp -r ' dicom_run_dir(mb_i,:) ' ' raw_run_dir(mb_i,:)]);
+                end
             end
         else % when you restarted the run
             rep_num = (size(dicom_run_dir, 1)/2);
             for mb_i = [rep_num*1, rep_num*2]
-                cd(deblank(raw_run_dir(mb_i/rep_num,:)));
-                movefile(deblank(dicom_run_dir(mb_i,1:end)));
+                if move_files == true
+                    cd(deblank(raw_run_dir(mb_i/rep_num,:)));
+                    movefile(deblank(dicom_run_dir(mb_i,1:end)));
+                else % copy instead of move
+                    fprintf('\ncopying ...\nSource: %s\nDestination: %s\n', dicom_run_dir(mb_i,:), raw_run_dir(mb_i/rep_num,:));
+                    system(['cp -r ' dicom_run_dir(mb_i,:) ' ' raw_run_dir(mb_i/rep_num,:)]);
+                end
             end
         end
     end
