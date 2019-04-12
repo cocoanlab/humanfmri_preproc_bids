@@ -143,10 +143,28 @@ for subj_i = 1:numel(preproc_subject_dir)
     topup_config = '/usr/local/fsl/src/topup/flirtsch/b02b0.cnf';
     system(['topup --imain=', PREPROC.distortion_correction_out, ' --datain=', dc_param, ' --config=', topup_config, ' --out=', topup_out, ...
         ' --fout=', topup_fieldout, ' --iout=', topup_unwarped]);
+    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' topup_unwarped '.nii.gz']);
+    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' topup_unwarped '.nii.gz']);
     
     PREPROC.topup.topup_out = topup_out;
     PREPROC.topup.topup_fieldout = topup_fieldout;
     PREPROC.topup.topup_unwarped = topup_unwarped;
+    
+    fprintf('Take snapshot of fieldmap images before/after TOPUP.\n');
+    if strcmpi(epi_enc_dir, 'ap')
+        topup_unwarped_png{1} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-ap_epi.png');
+        topup_unwarped_png{2} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-pa_epi.png');
+    elseif  strcmpi(epi_enc_dir, 'pa')
+        topup_unwarped_png{1} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-pa_epi.png');
+        topup_unwarped_png{2} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-ap_epi.png');
+    end
+    for top_i = 1:numel(topup_unwarped_png)
+        topup_before_list = cellstr(strcat(PREPROC.distortion_correction_out, ',', num2str([2*top_i-1;2*top_i])));
+        topup_after_list = cellstr(strcat([PREPROC.topup.topup_unwarped '.nii'], ',', num2str([2*top_i-1;2*top_i])));
+        canlab_preproc_show_montage([topup_before_list; topup_after_list], topup_unwarped_png{top_i});
+        drawnow;
+    end
+    close all;
   
     %% Applying topup on BOLD files   
     for i = find(do_preproc)'
