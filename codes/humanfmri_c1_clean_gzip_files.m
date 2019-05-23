@@ -31,7 +31,7 @@ function PREPROC = humanfmri_c1_clean_gzip_files(preproc_subject_dir, varargin)
 % ::
 %
 % - steps      You can specify the steps you want to run using the 'steps'
-%              option. e.g., 'steps', [1 4], then this will run only 1st 
+%              option. e.g., 'steps', [1 6], then this will run only 1st 
 %              (delete PREPROC.preproc_func_bold_files) and 4th steps
 %              (gzip)
 
