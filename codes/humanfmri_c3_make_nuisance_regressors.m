@@ -139,7 +139,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             disp(['Img File name: ' img_name]);
             [~, components] = extract_gray_white_csf(fmri_data(images_by_run{img_i}));
             % but, see canlab_connectivity_preproc
-            R = [R double(components{2}) double(components{3})];
+            R = [R scale(double(components{2})) scale(double(components{3}))];
         end
         
         % 4. finally, add linear drift
