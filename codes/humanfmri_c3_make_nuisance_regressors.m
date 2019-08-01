@@ -84,13 +84,15 @@ for i = 1:numel(varargin)
         end
     end
 end
+
 %% 
 for subj_i = 1:numel(preproc_subject_dir)
     % load PREPROC and Print header
     subject_dir = preproc_subject_dir{subj_i};
     PREPROC = save_load_PREPROC(subject_dir, 'load'); 
     print_header('Make and save nuisance regressors: ', PREPROC.subject_code);
-    %% set the nuisance regressors
+    
+    % set the nuisance regressors
     disp(':: List of nuisance regresosrs' )
     for j = 1:length(reg_idx)
         switch reg_idx{j}
@@ -105,14 +107,19 @@ for subj_i = 1:numel(preproc_subject_dir)
                 disp('- White Matter and CSF');
         end
     end
-    disp('----------------------------------------------')
+    disp('----------------------------------------------');
+    
     %% set directory
     subj_dir = PREPROC.preproc_outputdir;
     nuisance_dir = fullfile(subj_dir, 'nuisance_mat');
     if ~exist(nuisance_dir, 'dir'), mkdir(nuisance_dir); end
+    
     %% make nuisance.mat
+    
     % warning('No nuisance files. Please check') input('');
+    
     for img_i = 1:numel(PREPROC.nuisance.mvmt_covariates)
+        
         R = [];
         disp(['Run Number   : ' num2str(img_i)]);
         disp('-------------------------------------------');
@@ -123,10 +130,12 @@ for subj_i = 1:numel(preproc_subject_dir)
             R = [[PREPROC.nuisance.mvmt_covariates{img_i} PREPROC.nuisance.mvmt_covariates{img_i}.^2 ...
                 [zeros(1,6); diff(PREPROC.nuisance.mvmt_covariates{img_i})] [zeros(1,6); diff(PREPROC.nuisance.mvmt_covariates{img_i})].^2]];
         end
+        
         % 2. spike_covariates
         if do_spike_covariates
             R = [R  PREPROC.nuisance.spike_covariates{img_i}];
         end
+        
         % 3. extract and add WM(value2)_CSF(value3)
         if do_wm_csf
             
@@ -135,10 +144,14 @@ for subj_i = 1:numel(preproc_subject_dir)
             else %defaults
                 images_by_run = PREPROC.swr_func_bold_files;
             end
+            
             [~,img_name]=fileparts(images_by_run{img_i});
             disp(['Img File name: ' img_name]);
-            [~, components] = extract_gray_white_csf(fmri_data(images_by_run{img_i}));
-            % but, see canlab_connectivity_preproc
+            
+            [~, components] = extract_gray_white_csf(fmri_data(images_by_run{img_i}), 'masks', ...
+                {'gray_matter_mask.nii', 'canonical_white_matter_thrp5_ero1.nii', ...
+                'canonical_ventricles_thrp5_ero1.nii'});
+            
             R = [R scale(double(components{2})) scale(double(components{3}))];
         end
         
@@ -154,7 +167,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     reg_idx{length(reg_idx)+1} = 'linear drift';
     
     % Save PROPROC
-    PREPROC.nuisacne_descriptions = reg_idx;
+    PREPROC.nuisance_descriptions = reg_idx;
     PREPROC.nuisance_dir = nuisance_dir;
     PREPROC.nuisance_files = savename;
     
