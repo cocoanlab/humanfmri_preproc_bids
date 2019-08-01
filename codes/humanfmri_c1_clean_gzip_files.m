@@ -44,7 +44,7 @@ step_descript = {'deleted PREPROC.preproc_func_bold_files with json and mat file
     'deleted PREPROC.dcr_func_bold_files', ...
     'gzip PREPROC.wr_func_bold_files'};
 
-PREPROC.clean_steps{1} = [];
+% PREPROC.clean_steps{1} = [];
 
 for i = 1:numel(varargin)
     if ischar(varargin{i})
@@ -70,7 +70,7 @@ for subj_i = 1:numel(preproc_subject_dir)
     for j = 1:numel(steps)
         switch steps(j)
             case 1
-                PREPROC.clean_steps{end+1} = step_descript{1};
+                PREPROC.clean_steps{1} = step_descript{1};
                 for ii = 1:numel(PREPROC.preproc_func_bold_files)
                     [a, b] = fileparts(PREPROC.preproc_func_bold_files{ii});
                     temp_file1 = filenames(fullfile(a, [b '.nii']));
