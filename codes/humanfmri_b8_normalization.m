@@ -131,16 +131,18 @@ for subj_i = 1:numel(preproc_subject_dir)
     elseif do_t1norm
     
         if use_mask
-            dat = fmri_data(PREPROC.coreg_anat_file, PREPROC.coreg_anat_file);
-            
-            % smoothing the mask a little bit (with .5 mm FWHM kernel)
-            dat_mask = fmri_data(mask, PREPROC.coreg_anat_file);
-            isdiff = compare_space(dat_mask, dat);
-            if isdiff == 1 || isdiff == 2 % diff space, not just diff voxels
-                dat_mask = resample_space(dat_mask, dat, 'nearest');
-            end
+            % coregister lesion mask as T1 image
             PREPROC.preproc_lesion_mask_file = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion.nii', PREPROC.subject_code));
-            write(dat_mask, 'fname', PREPROC.preproc_lesion_mask_file);
+            before_mask_vol = spm_vol(mask);
+            before_mask_dat = spm_read_vols(before_mask_vol);
+            coreg_dat_vol = spm_vol(PREPROC.coreg_anat_file);
+            before_mask_vol.mat = coreg_dat_vol.mat; % coregistration
+            before_mask_vol.fname = PREPROC.preproc_lesion_mask_file;
+            spm_write_vol(before_mask_vol, before_mask_dat);
+            
+            % apply mask
+            dat = fmri_data(PREPROC.coreg_anat_file, PREPROC.coreg_anat_file);
+            dat_mask = fmri_data(PREPROC.preproc_lesion_mask_file, PREPROC.coreg_anat_file);
             dat_mask = preprocess(dat_mask, 'smooth', .5); % smoothing
             dat.dat = dat.dat .* double(dat_mask.dat==0);
             
