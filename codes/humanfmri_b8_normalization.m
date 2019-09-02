@@ -139,6 +139,8 @@ for subj_i = 1:numel(preproc_subject_dir)
             if isdiff == 1 || isdiff == 2 % diff space, not just diff voxels
                 dat_mask = resample_space(dat_mask, dat, 'nearest');
             end
+            PREPROC.preproc_lesion_mask_file = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion.nii', PREPROC.subject_code));
+            write(dat_mask, 'fname', PREPROC.preproc_lesion_mask_file);
             dat_mask = preprocess(dat_mask, 'smooth', .5); % smoothing
             dat.dat = dat.dat .* double(dat_mask.dat==0);
             
@@ -278,6 +280,24 @@ for subj_i = 1:numel(preproc_subject_dir)
     spm_jobman('run', {matlabbatch});
     
     PREPROC.wcoreg_anat_file = prepend_a_letter({PREPROC.coreg_anat_file}, ones(size(PREPROC.coreg_anat_file)), 'w');
+    
+    if use_mask
+        clear matlabbatch;
+        
+        matlabbatch{1}.spm.spatial.normalise.write.subj.def = {deformation_nii};
+        matlabbatch{1}.spm.spatial.normalise.write.subj.resample = {PREPROC.preproc_lesion_mask_file};
+        matlabbatch{1}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
+                                                                  78    76    85];
+        matlabbatch{1}.spm.spatial.normalise.write.woptions.vox = [2 2 2];
+        matlabbatch{1}.spm.spatial.normalise.write.woptions.interp = 0; % nearest neighbour
+        matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'w';
+        
+        spm('defaults','fmri');
+        spm_jobman('initcfg');
+        spm_jobman('run', {matlabbatch});
+        
+        PREPROC.wpreproc_lesion_mask_file = prepend_a_letter({PREPROC.preproc_lesion_mask_file}, ones(size(PREPROC.preproc_lesion_mask_file)), 'w');
+    end
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
 
