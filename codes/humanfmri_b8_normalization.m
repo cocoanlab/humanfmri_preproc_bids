@@ -131,20 +131,28 @@ for subj_i = 1:numel(preproc_subject_dir)
     elseif do_t1norm
     
         if use_mask
-            % coregister lesion mask as T1 image
+            % resample lesion mask onto the same space as T1 image
             PREPROC.preproc_lesion_mask_file = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion.nii', PREPROC.subject_code));
-            before_mask_vol = spm_vol(mask);
+            system(['cp ' mask ' ' PREPROC.preproc_lesion_mask_file]);
+            
+            before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_file);
+            anat_vol = spm_vol(PREPROC.anat_nii_files{1});
+            if ~isequal(before_mask_vol.dim, anat_vol.dim)
+                spm_reslice([anat_vol; before_mask_vol], struct('mean',false,'which',1,'interp',0,'prefix',''));
+            end
+            
+            % coregister lesion mask as T1 image
+            before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_file);
             before_mask_dat = spm_read_vols(before_mask_vol);
             coreg_dat_vol = spm_vol(PREPROC.coreg_anat_file);
             before_mask_vol.mat = coreg_dat_vol.mat; % coregistration
-            before_mask_vol.fname = PREPROC.preproc_lesion_mask_file;
             spm_write_vol(before_mask_vol, before_mask_dat);
             
             % apply mask
             dat = fmri_data(PREPROC.coreg_anat_file, PREPROC.coreg_anat_file);
-            dat_mask = fmri_data(PREPROC.preproc_lesion_mask_file, PREPROC.coreg_anat_file);
-            dat_mask = preprocess(dat_mask, 'smooth', .5); % smoothing
-            dat.dat = dat.dat .* double(dat_mask.dat==0);
+            mask_dat = fmri_data(PREPROC.preproc_lesion_mask_file, PREPROC.coreg_anat_file);
+            mask_dat = preprocess(mask_dat, 'smooth', .5); % smoothing
+            dat.dat = dat.dat .* double(mask_dat.dat==0);
             
             [a, b] = fileparts(PREPROC.coreg_anat_file);
             dat.fullpath = fullfile(a, ['masked_' b '.nii']);
