@@ -64,9 +64,9 @@ for subj_i = 1:numel(subject_codes)
     end
     
     dicom_imgs = filenames(fullfile(datdir, '*IMA')); % depth 1
-    if isempty(dicom_imgs), dicom_imgs = filenames(fullfile(datdir, '*/*IMA')); end % depth 2
-    if isempty(dicom_imgs), dicom_imgs = filenames(fullfile(datdir, '*/*/*IMA')); end % depth 3
-    if isempty(dicom_imgs), error('Can''t find dicom files. Please check.'); end
+    if isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1, dicom_imgs = filenames(fullfile(datdir, '*/*IMA')); end % depth 2
+    if isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1, dicom_imgs = filenames(fullfile(datdir, '*/*/*IMA')); end % depth 3
+    if isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1, error('Can''t find dicom files. Please check.'); end
     
     dicm2nii(dicom_imgs, outdir, 4, 'save_json');
     out = load(fullfile(outdir, 'dcmHeaders.mat'));
