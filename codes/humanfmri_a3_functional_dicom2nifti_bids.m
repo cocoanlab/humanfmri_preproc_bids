@@ -168,7 +168,7 @@ for subj_i = 1:numel(subject_codes)
             cd(func_dirs{i}); % entering into the directory because of the problems
             % related to the length of the files
             dicom_imgs = filenames('*IMA');
-            while isempty(dicom_imgs)
+            while isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1
                 cd(filenames('*', 'char'));
                 dicom_imgs = filenames('*IMA');
             end
