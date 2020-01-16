@@ -82,7 +82,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         
         mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_beforepreproc_' b '.nii']);
         PREPROC.mean_before_preproc{i,1} = mdat.fullpath;
-        write(mdat);
+        try
+            write(mdat);
+        catch
+            write(mdat, 'overwrite');
+        end
     end
     
     % save mean_before_preproc images
@@ -95,7 +99,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         % rewrite the sbref file using implicit mask file
         for i = 1:numel(PREPROC.preproc_func_sbref_files)
             sbrefdat = fmri_data(PREPROC.preproc_func_sbref_files{i}, PREPROC.implicit_mask_file);
-            write(sbrefdat);
+            try 
+                write(sbrefdat);
+            catch
+                write(sbrefdat, 'overwrite');
+            end
         end
         
         % save sbref images
