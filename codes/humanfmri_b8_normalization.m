@@ -156,7 +156,11 @@ for subj_i = 1:numel(preproc_subject_dir)
             
             [a, b] = fileparts(PREPROC.coreg_anat_file);
             dat.fullpath = fullfile(a, ['masked_' b '.nii']);
-            write(dat);
+            try
+                write(dat);
+            catch
+                write(dat, 'overwrite');
+            end
             
             PREPROC.masked_coreg_anat_file = dat.fullpath;
             
@@ -224,7 +228,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         [~, b] = fileparts(PREPROC.wr_func_bold_files{run_i });
         mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
         PREPROC.mean_wr_func_bold_files{run_i,1} = mdat.fullpath; % output
-        write(mdat);
+        try
+            write(mdat);
+        catch
+            write(mdat, 'overwrite');
+        end
     end
     
     mean_wr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_wr_func_bold.png'); 

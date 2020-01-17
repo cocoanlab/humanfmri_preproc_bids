@@ -102,7 +102,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         [~, b] = fileparts(PREPROC.swr_func_bold_files{run_i });
         mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
         PREPROC.mean_swr_func_bold_files{run_i,1} = mdat.fullpath; % output
-        write(mdat);
+        try
+            write(mdat);
+        catch
+            write(mdat, 'overwrite');
+        end
     end
     
     mean_swr_func_bold_png = fullfile(PREPROC.qcdir, 'mean_swr_func_bold.png'); % Scott added some lines to actually save the spike images

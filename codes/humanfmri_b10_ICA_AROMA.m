@@ -118,7 +118,11 @@ if compare_space(current_data, ica_mask{1})
         if strcmp(fext, '.gz')
             ica_mask{i}.image_names = fullfile(fpath, fname);
         end
-        write(ica_mask{i});
+        try
+            write(ica_mask{i});
+        catch
+            write(ica_mask{i}, 'overwrite');
+        end
     end
     
     gz_mask_files = filenames(fullfile(ica_aroma_dir, '*nii.gz'));
@@ -141,7 +145,12 @@ for subj_i = 1:numel(preproc_subject_dir)
     mask = fmri_data([PREPROC.swr_func_bold_files{1} ',1']);
     mask.dat = double(mask.dat~=0);
     mask.fullpath = fullfile(PREPROC.preproc_outputdir, 'preproc_mask.nii');
-    write(mask);
+    try
+        write(mask);
+    catch
+        write(mask, 'overwrite');
+    end
+    
     PREPROC.preproc_mask = mask.fullpath;
     
     PREPROC.aswr_func_bold_files = prepend_a_letter(PREPROC.swr_func_bold_files, ones(size(PREPROC.swr_func_bold_files)), 'a');

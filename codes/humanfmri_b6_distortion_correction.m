@@ -215,7 +215,11 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     mdat.fullpath = fullfile(PREPROC.preproc_mean_func_dir, ['mean_' b '.nii']);
     PREPROC.mean_dcr_func_bold_files = mdat.fullpath;
-    write(mdat);
+    try
+        write(mdat);
+    catch
+        write(mdat, 'overwrite');
+    end
     
     %% save mean_r_func_bold_png
     
