@@ -68,7 +68,7 @@ for i = 1:numel(varargin)
                 if ~isnumeric(TR) 
                     error('tr must be single numeric value, check your input');
                 end               
-                if length(TR) == 1
+                if length(TR) ~= 1
                     error('tr must be single numeric value, check your input');
                 end
             case {'overwritten'}
@@ -77,7 +77,7 @@ for i = 1:numel(varargin)
                 if ~isnumeric(varargin{i+1})
                     error('number of dimension must be single numeric value, check your input');
                 else
-                    add_option = [add_option ' -dim ' num2str(varagin{i+1})];
+                    add_option = [add_option ' -dim ' num2str(varargin{i+1})];
                 end                
         end
     end
