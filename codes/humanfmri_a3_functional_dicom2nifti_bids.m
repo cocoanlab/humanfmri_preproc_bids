@@ -36,6 +36,10 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 %                       parfor, please use this option.
 %                       e.g. humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_imaging_dir, disdaq_input, 'use_parfor')
 %
+% - 'dicom_pattern':    expression pattern of dicom files
+%                       (default: *IMA)
+%
+%
 % :Output(PREPROC):
 % ::
 %     PREPROC.func_bold_files
@@ -65,6 +69,7 @@ function PREPROC = humanfmri_a3_functional_dicom2nifti_bids(subject_code, study_
 
 check_disdaq = true;
 use_parfor = false;
+dicom_pattern = '*IMA';
 run_num = [];
 
 for i = 1:length(varargin)
@@ -74,6 +79,8 @@ for i = 1:length(varargin)
                 check_disdaq = false;
             case {'use_parfor'}
                 use_parfor = true;
+            case {'dicom_pattern'}
+                dicom_pattern = varargin{i+1};
             case {'run_num'}
                 run_num = varargin{i+1};
         end
@@ -167,10 +174,10 @@ for subj_i = 1:numel(subject_codes)
             
             cd(func_dirs{i}); % entering into the directory because of the problems
             % related to the length of the files
-            dicom_imgs = filenames('*IMA');
+            dicom_imgs = filenames(dicom_pattern);
             while isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1
                 cd(filenames('*', 'char'));
-                dicom_imgs = filenames('*IMA');
+                dicom_imgs = filenames(dicom_pattern);
             end
             
             taskname = func_dirs{i}(strfind(func_dirs{i}, 'func_task-')+10:strfind(func_dirs{i}, 'run-')-2);

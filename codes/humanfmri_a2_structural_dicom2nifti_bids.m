@@ -1,4 +1,4 @@
-function PREPROC = humanfmri_a2_structural_dicom2nifti_bids(subject_code, study_imaging_dir)
+function PREPROC = humanfmri_a2_structural_dicom2nifti_bids(subject_code, study_imaging_dir, varargin)
 
 % This function saves the dicom files into nifti and jason files in the anat
 % image directory (subject_dir/anat). 
@@ -14,6 +14,10 @@ function PREPROC = humanfmri_a2_structural_dicom2nifti_bids(subject_code, study_
 %                   (e.g., subject_code = {'sub-caps001', 'sub-caps002'});
 % - study_imaging_dir  the directory information for the study imaging data
 %                      (e.g., study_imaging_dir = '/NAS/data/CAPS2/Imaging')
+%
+% :Optional input:
+% - 'dicom_pattern'         expression pattern of dicom files
+%                           (default: *IMA)
 %
 % :Output(PREPROC):
 %
@@ -42,6 +46,16 @@ function PREPROC = humanfmri_a2_structural_dicom2nifti_bids(subject_code, study_
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+dicom_pattern = '*IMA';
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'dicom_pattern'}
+                dicom_pattern = varargin{i+1};
+        end
+    end
+end
 
 if ~iscell(subject_code)
     subject_codes{1} = subject_code;
@@ -63,7 +77,7 @@ for subj_i = 1:numel(subject_codes)
         mkdir(outdir);
     end
     
-    dicom_imgs = filenames(fullfile(datdir, '*IMA')); % depth 1
+    dicom_imgs = filenames(fullfile(datdir, dicom_pattern)); % depth 1
     if isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1, dicom_imgs = filenames(fullfile(datdir, '*/*IMA')); end % depth 2
     if isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1, dicom_imgs = filenames(fullfile(datdir, '*/*/*IMA')); end % depth 3
     if isempty(dicom_imgs) || sum(contains(dicom_imgs, 'no matches found'))==1, error('Can''t find dicom files. Please check.'); end
