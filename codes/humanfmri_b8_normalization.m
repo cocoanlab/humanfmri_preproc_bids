@@ -132,25 +132,28 @@ for subj_i = 1:numel(preproc_subject_dir)
     
         if use_mask
             % resample lesion mask onto the same space as T1 image
-            PREPROC.preproc_lesion_mask_file = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion.nii', PREPROC.subject_code));
-            system(['cp ' mask ' ' PREPROC.preproc_lesion_mask_file]);
-            
-            before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_file);
-            anat_vol = spm_vol(PREPROC.anat_nii_files{1});
-            if ~isequal(before_mask_vol.dim, anat_vol.dim)
-                spm_reslice([anat_vol; before_mask_vol], struct('mean',false,'which',1,'interp',0,'prefix',''));
+            for mask_i = 1:numel(mask)
+                PREPROC.preproc_lesion_mask_files{mask_i} = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion_%d.nii', PREPROC.subject_code, mask_i));
+                system(['cp ' mask{mask_i} ' ' PREPROC.preproc_lesion_mask_files{mask_i}]);
+                
+                before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_files{mask_i});
+                anat_vol = spm_vol(PREPROC.anat_nii_files{1});
+                if ~isequal(before_mask_vol.dim, anat_vol.dim)
+                    spm_reslice([anat_vol; before_mask_vol], struct('mean',false,'which',1,'interp',0,'prefix',''));
+                end
+                
+                % coregister lesion mask as T1 image
+                before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_files{mask_i});
+                before_mask_dat = spm_read_vols(before_mask_vol);
+                coreg_dat_vol = spm_vol(PREPROC.coreg_anat_file);
+                before_mask_vol.mat = coreg_dat_vol.mat; % coregistration
+                spm_write_vol(before_mask_vol, before_mask_dat);
             end
-            
-            % coregister lesion mask as T1 image
-            before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_file);
-            before_mask_dat = spm_read_vols(before_mask_vol);
-            coreg_dat_vol = spm_vol(PREPROC.coreg_anat_file);
-            before_mask_vol.mat = coreg_dat_vol.mat; % coregistration
-            spm_write_vol(before_mask_vol, before_mask_dat);
             
             % apply mask
             dat = fmri_data(PREPROC.coreg_anat_file, PREPROC.coreg_anat_file);
-            mask_dat = fmri_data(PREPROC.preproc_lesion_mask_file, PREPROC.coreg_anat_file);
+            mask_dat = fmri_data(PREPROC.preproc_lesion_mask_files, PREPROC.coreg_anat_file);
+            mask_dat.dat = any(mask_dat.dat, 2);
             mask_dat = preprocess(mask_dat, 'smooth', .5); % smoothing
             dat.dat = dat.dat .* double(mask_dat.dat==0);
             
@@ -303,7 +306,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         clear matlabbatch;
         
         matlabbatch{1}.spm.spatial.normalise.write.subj.def = {deformation_nii};
-        matlabbatch{1}.spm.spatial.normalise.write.subj.resample = {PREPROC.preproc_lesion_mask_file};
+        matlabbatch{1}.spm.spatial.normalise.write.subj.resample = PREPROC.preproc_lesion_mask_files;
         matlabbatch{1}.spm.spatial.normalise.write.woptions.bb = [-78  -112   -70
                                                                   78    76    85];
         matlabbatch{1}.spm.spatial.normalise.write.woptions.vox = [2 2 2];
@@ -314,7 +317,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         spm_jobman('initcfg');
         spm_jobman('run', {matlabbatch});
         
-        PREPROC.wpreproc_lesion_mask_file = prepend_a_letter({PREPROC.preproc_lesion_mask_file}, ones(size(PREPROC.preproc_lesion_mask_file)), 'w');
+        PREPROC.wpreproc_lesion_mask_files = prepend_a_letter(PREPROC.preproc_lesion_mask_files, ones(size(PREPROC.preproc_lesion_mask_files)), 'w');
     end
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
