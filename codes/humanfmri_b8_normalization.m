@@ -65,6 +65,7 @@ use_dc = true;
 run_num = [];
 wm_mask_thr = 0.9;
 csf_mask_thr = 0.9;
+do_extract_native_vw = false;
 
 % options
 for i = 1:length(varargin)
@@ -89,6 +90,8 @@ for i = 1:length(varargin)
                 wm_mask_thr = varargin{i+1};
             case {'csf_mask_thr'}
                 csf_mask_thr = varargin{i+1};
+            case {'extract_native_vw'}
+                do_extract_native_vw = true;
         end
     end
 end
@@ -250,38 +253,42 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     %% Extracting WM/CSF signals
     
-    PREPROC.wm_nuisance_mask = fullfile(PREPROC.preproc_anat_dir, 'wm_nuisance_mask.nii');
-    PREPROC.csf_nuisance_mask = fullfile(PREPROC.preproc_anat_dir, 'csf_nuisance_mask.nii');
-    
-    wm_mask = spm_vol(PREPROC.segmentation{2});
-    wm_mask_dat = wm_mask.private.dat(:,:,:);
-    wm_mask_dat = double(wm_mask_dat > wm_mask_thr);
-    wm_mask_dat = spm_erode(wm_mask_dat);
-    wm_mask.fname = PREPROC.wm_nuisance_mask;
-    spm_write_vol(wm_mask, wm_mask_dat);
-    
-    csf_mask = spm_vol(PREPROC.segmentation{3});
-    csf_mask_dat = csf_mask.private.dat(:,:,:);
-    csf_mask_dat = double(csf_mask_dat > csf_mask_thr);
-    csf_mask_dat = spm_erode(csf_mask_dat);
-    csf_mask.fname = PREPROC.csf_nuisance_mask;
-    spm_write_vol(csf_mask, csf_mask_dat);
-    
-    for run_i = find(do_preproc)' %1:numel(PREPROC.wr_func_bold_files)
-        if use_dc
-            wm_dat = fmri_data(PREPROC.dcr_func_bold_files{run_i}, PREPROC.wm_nuisance_mask);
-            csf_dat = fmri_data(PREPROC.dcr_func_bold_files{run_i}, PREPROC.csf_nuisance_mask);
-        else
-            wm_dat = fmri_data(PREPROC.r_func_bold_files{run_i}, PREPROC.wm_nuisance_mask);
-            csf_dat = fmri_data(PREPROC.r_func_bold_files{run_i}, PREPROC.csf_nuisance_mask);
+    if do_extract_native_vw
+
+        PREPROC.wm_nuisance_mask = fullfile(PREPROC.preproc_anat_dir, 'wm_nuisance_mask.nii');
+        PREPROC.csf_nuisance_mask = fullfile(PREPROC.preproc_anat_dir, 'csf_nuisance_mask.nii');
+
+        wm_mask = spm_vol(PREPROC.segmentation{2});
+        wm_mask_dat = wm_mask.private.dat(:,:,:);
+        wm_mask_dat = double(wm_mask_dat > wm_mask_thr);
+        wm_mask_dat = spm_erode(wm_mask_dat);
+        wm_mask.fname = PREPROC.wm_nuisance_mask;
+        spm_write_vol(wm_mask, wm_mask_dat);
+
+        csf_mask = spm_vol(PREPROC.segmentation{3});
+        csf_mask_dat = csf_mask.private.dat(:,:,:);
+        csf_mask_dat = double(csf_mask_dat > csf_mask_thr);
+        csf_mask_dat = spm_erode(csf_mask_dat);
+        csf_mask.fname = PREPROC.csf_nuisance_mask;
+        spm_write_vol(csf_mask, csf_mask_dat);
+
+        for run_i = find(do_preproc)' %1:numel(PREPROC.wr_func_bold_files)
+            if use_dc
+                wm_dat = fmri_data(PREPROC.dcr_func_bold_files{run_i}, PREPROC.wm_nuisance_mask);
+                csf_dat = fmri_data(PREPROC.dcr_func_bold_files{run_i}, PREPROC.csf_nuisance_mask);
+            else
+                wm_dat = fmri_data(PREPROC.r_func_bold_files{run_i}, PREPROC.wm_nuisance_mask);
+                csf_dat = fmri_data(PREPROC.r_func_bold_files{run_i}, PREPROC.csf_nuisance_mask);
+            end
+
+            PREPROC.nuisance.wm_mean{run_i, 1} = mean(wm_dat.dat)';
+            PREPROC.nuisance.csf_mean{run_i, 1} = mean(csf_dat.dat)';
+            [~, wm_pc] = pca(wm_dat.dat');
+            [~, csf_pc] = pca(csf_dat.dat');
+            PREPROC.nuisance.wm_princomps{run_i, 1} = wm_pc(:,1:5);
+            PREPROC.nuisance.csf_princomps{run_i, 1} = csf_pc(:,1:5);
         end
         
-        PREPROC.nuisance.wm_mean{run_i, 1} = mean(wm_dat.dat)';
-        PREPROC.nuisance.csf_mean{run_i, 1} = mean(csf_dat.dat)';
-        [~, wm_pc] = pca(wm_dat.dat');
-        [~, csf_pc] = pca(csf_dat.dat');
-        PREPROC.nuisance.wm_princomps{run_i, 1} = wm_pc(:,1:5);
-        PREPROC.nuisance.csf_princomps{run_i, 1} = csf_pc(:,1:5);
     end
 
     %% warping anatomical image
