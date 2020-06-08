@@ -133,7 +133,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         if use_mask
             % resample lesion mask onto the same space as T1 image
             for mask_i = 1:numel(mask)
-                PREPROC.preproc_lesion_mask_files{mask_i} = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion_%d.nii', PREPROC.subject_code, mask_i));
+                PREPROC.preproc_lesion_mask_files{mask_i,1} = fullfile(PREPROC.preproc_anat_dir, sprintf('%s_T1w_lesion_%d.nii', PREPROC.subject_code, mask_i));
                 system(['cp ' mask{mask_i} ' ' PREPROC.preproc_lesion_mask_files{mask_i}]);
                 
                 before_mask_vol = spm_vol(PREPROC.preproc_lesion_mask_files{mask_i});
