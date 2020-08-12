@@ -114,9 +114,10 @@ if compare_space(current_data, ica_mask{1})
     for i = 1:numel(ica_mask)
         ica_mask{i} = resample_space(ica_mask{i}, current_data, 'nearest');
         ica_mask{i}.fullpath = fullfile(ica_aroma_dir, ica_mask{i}.image_names);
-        [fpath, fname, fext] = fileparts(ica_mask{i}.image_names);
+        [fpath, fname, fext] = fileparts(ica_mask{i}.fullpath);
         if strcmp(fext, '.gz')
-            ica_mask{i}.image_names = fullfile(fpath, fname);
+            ica_mask{i}.fullpath = fullfile(fpath, fname);
+            ica_mask{i}.image_names = fname; % without .gz
         end
         try
             write(ica_mask{i});
