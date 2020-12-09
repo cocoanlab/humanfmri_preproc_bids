@@ -27,9 +27,9 @@ function humanfmri_c2_get_framewise_displacement(preproc_subject_dir,varargin)
 % ..
 %
 % :For example
-%1) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','VD')
-%2) humanfmri_c2_get_framewise_displacement(preproc_subject_dir) %default
-%3) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','Power');
+% 1) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','VD')
+% 2) humanfmri_c2_get_framewise_displacement(preproc_subject_dir) %default
+% 3) humanfmri_c2_get_framewise_displacement(preproc_subject_dir,'type','Power');
 
 %% functional commands
 save_plot = true;
@@ -68,12 +68,9 @@ for subj_i = 1:numel(preproc_subject_dir)
                 % ======================================================================= %
                 head = 50; %maybe default?
                 
-                % detrend motion regressors
                 
                 mov = MoveParams{run_i}; % x,y,z
-                mov = detrend(mov,'linear');
-                % convert degrees to radians to mm
-                mov(:,4:6) = head*pi/180*mov(:,4:6);
+                mov(:,4:6) = head*mov(:,4:6); % Do not need to covert if RP is calulated by SPM (Suhwan) 
                 
                 % differentiate movement parameters
                 delta_mov = [
