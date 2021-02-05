@@ -117,28 +117,35 @@ for subj_i = 1:numel(preproc_subject_dir)
             warning('Check your input, especially, FD''s name (VD, Power)');
     end
     
-    %% Exculsion criteria
+    %% Exculsion criteria    
+    excul_1 = zeros(1,length(MoveParams)); % liberal (mean FD > 0.55 mm)
+    excul_2 = zeros(1,length(MoveParams)); % strigent (mean FD > 0.2 mm)
+    excul_3 = zeros(1,length(MoveParams)); % at least one FD > 5 mm
+    extxt = {' / meanFD>.55', ' / meanFD>.2' ,' / any(FD)>5'};
     
-    excul_1 = zeros(1,length(MoveParams));
-    excul_2 = zeros(1,length(MoveParams));
-    % 1) Intial criteria
-    excul_1(MeanFd > 0.55) = 1;
-    % 2) More stringent
+    % 1) Liberal criteria
+    excul_1(MeanFd > 0.55) = 1; % liberal 
+    
+    
+    % 2) More stringent criteria
     % 2.1) greater than 0.2 mm (Ciric)
     excul_2(MeanFd > 0.2) = 1;
+    
     for run_i = 1:length(FD)
-        % 2.2) Propotion ( > 20%)
-        if strcmp(FD_id,'Jenk')
-            FdTher = round(size(FD{run_i},1) * 0.20);
-            if sum(FD{run_i}> FdJenkThr) > FdTher
-                excul_2(run_i) = 1;
-            end
-        end
-        % 2.3) >5mm
+        % 2.2) Propotion ( > 20%): not implemented yet
+%         if strcmp(FD_id,'Jenk')
+%             FdTher = round(size(FD{run_i},1) * 0.20);
+%             if sum(FD{run_i}> FdJenkThr) > FdTher
+%                 excul_2(run_i) = 1;
+%             end
+%         end
+
+        % 3) > 5mm 
         if any(FD{run_i} > 5)
-            excul_2(run_i) = 1;
+            excul_3(run_i) = 1;
         end
     end
+    
     %% plot FD
     c=1;
     if save_plot
@@ -146,17 +153,11 @@ for subj_i = 1:numel(preproc_subject_dir)
         Nrow_subplot = length(FD);
         sz = get(0, 'screensize');
         set(gcf, 'Position', [sz(3)*.02 sz(4)*.07 sz(3) *.65 sz(4)*.85])
-        for run_i=1:length(FD)
+        for run_i = 1:length(FD)
             % draw plot
             subplot(Nrow_subplot,3,[c c+1]);
             plot(FD{run_i});
-           
-            % change title color if exceed exclusion criteria
-            if excul_1(run_i) | excul_2(run_i)
-                title(sprintf('run %02d',run_i),'color',[1 0 0]);
-            else
-                title(sprintf('run %02d',run_i));
-            end
+            title(sprintf('run %02d',run_i));
             
             set(gca,'xlim', [0 length(FD{run_i})] ,'ylim',[0 0.7]);
             
@@ -166,12 +167,28 @@ for subj_i = 1:numel(preproc_subject_dir)
             histogram(FD{run_i},70);
             set(gca,'xlim', [0 0.7]);
             
-            c=c+3;            
-            if excul_1(run_i) | excul_2(run_i)
-                title(['Mean: ' num2str(MeanFd(run_i))],'color',[1 0 0]);
-            else
-                title(['Mean: ' num2str(MeanFd(run_i))]);
+            c=c+3;  
+            
+            title_text = ['Mean: ' num2str(MeanFd(run_i))];
+            
+            % title color BLUE if exc2 
+            
+            if excul_2(run_i)
+                if  excul_1(run_i)
+                    title_text = [title_text extxt{1}];
+                    title(title_text,'color',[1 0 0]);
+                else
+                    title_text = [title_text extxt{2}];
+                    title(title_text,'color',[0 0 1]);
+                end
             end
+            
+            % title color RED if exc3
+            if excul_3(run_i)
+                title_text = [title_text extxt{3}];
+                title(title_text, 'color', [1 0 0]);
+            end
+            
             % 0.2> 0.15 > 0.10
             %         if MeanFd(run_i) > 0.2
             %             title(['Mean: ' num2str(MeanFd(run_i))],'color',[1 0 0]);
@@ -200,10 +217,12 @@ for subj_i = 1:numel(preproc_subject_dir)
     results.raw = MoveParams;
     results.exclusion_1 = excul_1;
     results.exclusion_2 = excul_2;
+    results.exclusion_3 = excul_3;
     results.exclusion_descrip = {...
         'Description                                    : ''1'' means mark for exculsion; the order is order of run based on PREPROC'
         'exclusion_1 (less stringent)                   : 1) mean FD > 0.55 mm '; ...
-        'exculsion_2 (more stringent and multi-criteria): 1) mean FD > 0.2mm, 2) (only Jenk''s) 3) large spike (5mm)'};
+        'exclusion_2 (more stringent and multi-criteria): 1) mean FD > 0.2mm'; ...
+        'exclusion_3 (at least one spike) : 1) any spike > 5 mm';};
     %% save PREPROC
     PREPROC.framewise_displacement = results;
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
