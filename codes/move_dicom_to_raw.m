@@ -57,7 +57,6 @@ for i = 1:length(varargin)
     end
 end
 
-
 if ~iscell(subject_code)
     subject_codes{1} = subject_code;
 else
@@ -66,13 +65,16 @@ end
 
 for sub_i = 1:numel(subject_codes)
     raw_dir = fullfile(study_imaging_dir, 'raw', subject_codes{1,sub_i});
-    dicom_dir = fullfile(study_imaging_dir, 'dicom_from_scanner');
-    dicom_dir_2 = filenames(fullfile(dicom_dir, ['*' upper(subject_codes{1,sub_i}(5:end)) '*']), 'char'); % change this part according to your project folder names
-    sub_dicom_dir = filenames(fullfile(dicom_dir_2, ['COCOAN*']), 'char');
+%     raw_dir = strrep(raw_dir, 'cocoanlab Dropbox', 'dropbox');
+    dicom_dir = filenames(fullfile(study_imaging_dir, 'dicom_from_scanner', ['*' upper(subject_codes{1,sub_i}(5:end)) '*']), 'char');
+%     dicom_dir = strrep(dicom_dir, 'cocoanlab Dropbox', 'dropbox');
+    sub_dicom_dir = filenames(fullfile(dicom_dir, ['COCOAN*']), 'char');
     
     % anat
     raw_anat_dir = fullfile(raw_dir, 'dicom', 'anat');
+    
     T1_dir = filenames(fullfile(sub_dicom_dir, ['T1*']), 'char');
+    
     if isempty(T1_dir)
         input_key = input(' *** T1 directory is empty. Want to continue anyway? (c) Want to stop? (s):', 's');
         if input_key == 's'
@@ -118,10 +120,10 @@ for sub_i = 1:numel(subject_codes)
         end
     end
     
-    % run1: FT1
+    % functional runs
     for run_i = 1:run_n
         raw_run_dir = filenames(fullfile(raw_dir, 'dicom', ['*' num2str(run_i) '*']), 'char');
-        dicom_run_dir = filenames(fullfile(sub_dicom_dir, [num2str(run_i), '*']), 'char');
+        dicom_run_dir = filenames(fullfile(sub_dicom_dir, ['RUN0', num2str(run_i), '*']), 'char');
         if size(dicom_run_dir, 1) == 2
             for mb_i = 1:2
                 if move_files == true

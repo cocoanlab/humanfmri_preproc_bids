@@ -170,7 +170,8 @@ for subj_i = 1:numel(preproc_subject_dir)
             c=c+3;  
             
             title_text = ['Mean: ' num2str(MeanFd(run_i))];
-            
+            title(title_text);
+
             % title color BLUE if exc2 
             
             if excul_2(run_i)
