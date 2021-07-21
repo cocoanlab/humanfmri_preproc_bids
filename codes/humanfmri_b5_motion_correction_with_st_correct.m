@@ -111,7 +111,7 @@ for subj_i = 1:numel(preproc_subject_dir)
         for run_i = 1:numel(PREPROC.preproc_func_bold_files)
             
             k = k + 1;
-            images_per_session = numel(spm_vol(data{k}));
+            images_per_session = numel(spm_vol(PREPROC.preproc_func_bold_files{k}));
             
             if run_i == 1 && use_sbref, kk = 2; else, kk = 1; end
             
