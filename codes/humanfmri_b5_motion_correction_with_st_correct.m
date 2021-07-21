@@ -64,9 +64,23 @@ for subj_i = 1:numel(preproc_subject_dir)
         matlabbatch{1}.spm.spatial.realign.estimate.eoptions.rtm = 0; % do not register to mean (twice as long)
 
         %% run realign ACROSS runs 
-        data = PREPROC.preproc_func_bold_files;
+        
+        temp_working_dir = tempname;
+        temp_working_dir = strrep(temp_working_dir, 'gz', '');
+        mkdir(temp_working_dir);
+        data = [];
+        for run_i = 1:numel(PREPROC.preproc_func_bold_files)
+            [d, f] = fileparts(PREPROC.preproc_func_bold_files{run_i});
+            tempcpfile = fullfile(temp_working_dir, [f '.nii']);
+            copyfile(PREPROC.preproc_func_bold_files{run_i}, tempcpfile);
+            data = [data; {tempcpfile}];
+        end
+        
         if use_sbref
-            data_all = [PREPROC.preproc_func_sbref_files(1);data];
+            [d, f] = fileparts(PREPROC.preproc_func_sbref_files{1});
+            tempcpfile = fullfile(temp_working_dir, [f '.nii']);
+            copyfile(PREPROC.preproc_func_bold_files{run_i}, tempcpfile);
+            data_all = [{tempcpfile}; data];
         else
             data_all = data;
         end
@@ -84,13 +98,12 @@ for subj_i = 1:numel(preproc_subject_dir)
         
         %% Save realignment parameter
         
-        if use_sbref
-            [d, f] = fileparts(PREPROC.preproc_func_sbref_files{1});
-        else
-            [d, f] = fileparts(data{1});
-        end
+        [d, f] = fileparts(data_all{1});
         
-        PREPROC.mvmt_param_files = fullfile(d, ['rp_' f '.txt']);
+        tempcpfile = fullfile(d, ['rp_' f '.txt']);
+        PREPROC.mvmt_param_files = fullfile(PREPROC.preproc_func_dir, ['rp_' f '.txt']);
+        copyfile(tempcpfile, PREPROC.mvmt_param_files);
+        rmdir(temp_working_dir, 's');
         temp_mvmt = textread(PREPROC.mvmt_param_files);
         % PREPROC.nuisance.all_mvmt = temp_mvmt(2:end,:);
         
