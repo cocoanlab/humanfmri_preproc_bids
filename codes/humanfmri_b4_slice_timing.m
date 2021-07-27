@@ -21,10 +21,10 @@ function PREPROC = humanfmri_b4_slice_timing(preproc_subject_dir, tr, mbf, varar
 % :Optional Input:
 %
 % - custom_slice_timing    Specification of slice timing. Order(integer
-%                          form) or timing (in milliseconds, float form).
+%                          type) or timing (in milliseconds, float type).
 %                          ex) Order : [1 3 5 7 2 4 6 8]',
 %                              Timing : [0.0000 252.5000 62.5000 315.0000
-% .                                     125.0000 377.5000 190.0000]'
+%                                       125.0000 377.5000 190.0000]'
 %                          (If not specified, slice timing is obtained by reading dicom header file)
 %
 % :Output(PREPROC):
@@ -76,13 +76,6 @@ for subj_i = 1:numel(preproc_subject_dir)
     print_header('Slice timing correction', a);
     
     PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
-    
-    if exist('custom_slice_timing', 'var')
-        PREPROC.slice_time = custom_slice_timing;
-    else
-        dicomheader = load(PREPROC.dicomheader_files{1});
-        PREPROC.slice_time = dicomheader.h.MosaicRefAcqTimes';
-    end
 
     %% RUNS TO INCLUDE
     do_preproc = true(numel(PREPROC.preproc_func_bold_files),1);
@@ -107,12 +100,27 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     %% 4. so: Slice order
     
-    slice_timing_job{1}.spm.temporal.st.so = PREPROC.slice_time;
-    if ~exist('custom_slice_timing', 'var')
-        slice_timing_job{1}.spm.temporal.st.refslice = find(PREPROC.slice_time==0, 1, 'first');
+    if exist('custom_slice_timing', 'var')
+        PREPROC.slice_time = custom_slice_timing(:).';
     else
-        slice_timing_job{1}.spm.temporal.st.refslice = find(PREPROC.slice_time==min(PREPROC.slice_time), 1, 'first');
+        dicomheader = load(PREPROC.dicomheader_files{1});
+        PREPROC.slice_time = dicomheader.h.MosaicRefAcqTimes(:).';
     end
+
+    slice_timing_job{1}.spm.temporal.st.so = PREPROC.slice_time;
+    
+    %% 5. refslice: Reference slice (first)
+    
+    if isequal(1:num_slices, sort(PREPROC.slice_time, 'ascend')) % Order-based
+        slice_timing_job{1}.spm.temporal.st.refslice = 1;
+    else
+        if min(PREPROC.slice_time) >= 0 && max(PREPROC.slice_time) <= tr % Time-based
+            slice_timing_job{1}.spm.temporal.st.refslice = min(PREPROC.slice_time);
+        end
+    end
+    
+    %% 6. prefix
+    
     slice_timing_job{1}.spm.temporal.st.prefix = 'a';
     
     %% Saving slice time correction job
