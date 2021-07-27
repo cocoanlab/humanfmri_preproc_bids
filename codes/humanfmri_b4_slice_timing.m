@@ -116,6 +116,8 @@ for subj_i = 1:numel(preproc_subject_dir)
     else
         if min(PREPROC.slice_time) >= 0 && max(PREPROC.slice_time) <= tr % Time-based
             slice_timing_job{1}.spm.temporal.st.refslice = min(PREPROC.slice_time);
+        else
+            error('Slice timing information is strange.');
         end
     end
     
