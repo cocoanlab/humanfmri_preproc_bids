@@ -110,6 +110,10 @@ for subj_i = 1:numel(subject_codes)
     dicomdir{j+1, 1} = fullfile(subject_dir, 'dicom', 'fmap');
     mkdir(dicomdir{j+1});
     
+    % dwi directory
+    dicomdir{j+1, 1} = fullfile(subject_dir, 'dicom', 'dwi');
+    mkdir(dicomdir{j+1});
+    
     PREPROC.study_imaging_dir = study_imaging_dir;
     PREPROC.study_rawdata_dir = fullfile(study_imaging_dir, 'raw');
     PREPROC.subject_code = subject_codes{subj_i};

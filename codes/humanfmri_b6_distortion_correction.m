@@ -79,8 +79,14 @@ for subj_i = 1:numel(preproc_subject_dir)
 
     PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'load'); % load PREPROC       
     
-    distort_ap_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-ap'), :);
-    distort_pa_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-pa'), :);
+    if ~any(contains(cellstr(PREPROC.fmap_nii_files), 'run-02_epi.nii')) % no dwi-fmap
+        distort_ap_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-ap'), :);
+        distort_pa_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-pa'), :);
+    else % dwi-fmap exist
+        distort_ap_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-ap_run-01'), :);
+        distort_pa_dat = PREPROC.fmap_nii_files(contains(cellstr(PREPROC.fmap_nii_files), 'dir-pa_run-01'), :);
+    end
+        
     %% Specify run number to include
     do_preproc = true(numel(PREPROC.r_func_bold_files),1);
     if ~isempty(run_num)
@@ -114,20 +120,22 @@ for subj_i = 1:numel(preproc_subject_dir)
     
     % calculate and write the distortion correction parameter
     
-    dicomheader = load(PREPROC.dicomheader_files{1});
-    readout_time = dicomheader.h.ReadoutSeconds;
-    distort_info = nifti(distort_ap_dat);
-    distort_num = distort_info.dat.dim(4);
+    fmap_hfile = fullfile(PREPROC.study_imaging_dir, 'disdaq_dcmheaders', PREPROC.subject_code, sprintf('%s_fmap_dcmheaders.mat', PREPROC.subject_code));
+    dicomheader = load(fmap_hfile);
     
     dc_param = fullfile(PREPROC.preproc_fmap_dir, ['dc_param_', epi_enc_dir, '.txt']);
     
     fileID = fopen(dc_param, 'w');
     if strcmpi(epi_enc_dir, 'ap')
-        distort_param_dat = [repmat([0 -1 0 readout_time], distort_num, 1); ...
-            repmat([0 1 0 readout_time], distort_num, 1)];
+        h2 = dicomheader.h.distortion_corr_64ch_pa_polarity_invert_to_ap;
+        h1 = dicomheader.h.distortion_corr_64ch_pa;
+        distort_param_dat = [repmat([0 -1 0 h1.ReadoutSeconds], h1.NumberOfTemporalPositions, 1); ...
+            repmat([0 1 0 h2.ReadoutSeconds], h2.NumberOfTemporalPositions, 1)];
     elseif strcmpi(epi_enc_dir, 'pa')
-        distort_param_dat = [repmat([0 1 0 readout_time], distort_num, 1); ...
-            repmat([0 -1 0 readout_time], distort_num, 1)];
+        h1 = dicomheader.h.distortion_corr_64ch_pa;
+        h2 = dicomheader.h.distortion_corr_64ch_pa_polarity_invert_to_ap;
+        distort_param_dat = [repmat([0 1 0 h1.ReadoutSeconds], h1.NumberOfTemporalPositions, 1); ...
+            repmat([0 -1 0 h2.ReadoutSeconds], h2.NumberOfTemporalPositions, 1)];
     end
     
     fprintf(fileID, repmat([repmat('%.4f\t', 1, size(distort_param_dat, 2)), '\n'], 1, size(distort_param_dat, 1)), distort_param_dat');

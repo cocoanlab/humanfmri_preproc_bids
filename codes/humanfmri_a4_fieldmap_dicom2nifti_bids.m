@@ -61,49 +61,93 @@ for subj_i = 1:numel(subject_codes)
     studydir = fileparts(imgdir);
     
     outdisdaqdir = fullfile(studydir, 'disdaq_dcmheaders', subject_id);
+    if ~exist(outdisdaqdir, 'dir'), mkdir(outdisdaqdir); end
     
     cd(fmap_dir);
     
-    dicom_imgs = filenames('*/*IMA', 'absolute');
-    dicom_imgs_pa = dicom_imgs(~contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
-    dicom_imgs_ap = dicom_imgs(contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
+    if ~any(contains(filenames('*'), 'EP2D_DIFF_DISCOR')) % no dwi-fmap
     
-    %% PA
-    dicm2nii(dicom_imgs_pa, outdir, 4, 'save_json');
-    out = load(fullfile(outdir, 'dcmHeaders.mat'));
-    f = fields(out.h);
-    
-    cd(outdir);
-    nifti_3d = filenames([f{1} '*.nii']);
-    
-    [~, subj_id] = fileparts(PREPROC.subject_dir);
-    output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_epi', subj_id));
-    
-    disp('Converting 3d images to 4d images...')
-    spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
-    
-    delete(fullfile(outdir, [f{1} '*nii']))
-    
-    % == change the json file name and save PREPROC
-    movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
-    
-    %% AP
-    dicm2nii(dicom_imgs_ap, outdir, 4, 'save_json');
-    out = load(fullfile(outdir, 'dcmHeaders.mat'));
-    f = fields(out.h);
-    
-    nifti_3d = filenames([f{2} '*.nii']);
-    
-    [~, subj_id] = fileparts(PREPROC.subject_dir);
-    output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_epi', subj_id));
-    
-    disp('Converting 3d images to 4d images...')
-    spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
-    
-    delete(fullfile(outdir, [f{2} '*nii']))
-    
-    % == change the json file name and save PREPROC
-    movefile(fullfile(outdir, [f{2} '.json']), [output_4d_fnames '.json']);
+        dicom_imgs = filenames('*/*IMA', 'absolute');
+        dicom_imgs_pa = dicom_imgs(~contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
+        dicom_imgs_ap = dicom_imgs(contains(dicom_imgs, 'POLARITY_INVERT_TO_AP'));
+
+        %% PA
+        dicm2nii(dicom_imgs_pa, outdir, 4, 'save_json');
+        out = load(fullfile(outdir, 'dcmHeaders.mat'));
+        f = fields(out.h);
+
+        cd(outdir);
+        nifti_3d = filenames([f{1} '*.nii']);
+
+        [~, subj_id] = fileparts(PREPROC.subject_dir);
+        output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_epi', subj_id));
+
+        disp('Converting 3d images to 4d images...')
+        spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
+
+        delete(fullfile(outdir, [f{1} '*nii']))
+
+        % == change the json file name and save PREPROC
+        movefile(fullfile(outdir, [f{1} '.json']), [output_4d_fnames '.json']);
+
+        %% AP
+        dicm2nii(dicom_imgs_ap, outdir, 4, 'save_json');
+        out = load(fullfile(outdir, 'dcmHeaders.mat'));
+        f = fields(out.h);
+
+        nifti_3d = filenames([f{2} '*.nii']);
+
+        [~, subj_id] = fileparts(PREPROC.subject_dir);
+        output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_epi', subj_id));
+
+        disp('Converting 3d images to 4d images...')
+        spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
+
+        delete(fullfile(outdir, [f{2} '*nii']))
+
+        % == change the json file name and save PREPROC
+        movefile(fullfile(outdir, [f{2} '.json']), [output_4d_fnames '.json']);
+        
+    else % dwi-fmap exist
+        
+        dicom_imgs = filenames('*/*IMA', 'absolute');
+        dicom_imgs_forfunc_ap = dicom_imgs(contains(dicom_imgs, 'DISTORTION_CORR_64CH_PA_POLARITY_INVERT_TO_AP'));
+        dicom_imgs_forfunc_pa = setdiff(dicom_imgs(contains(dicom_imgs, 'DISTORTION_CORR_64CH_PA')), dicom_imgs_forfunc_ap);
+        dicom_imgs_fordwi_ap = dicom_imgs(contains(dicom_imgs, 'EP2D_DIFF_DISCOR_AP'));
+        dicom_imgs_fordwi_pa = dicom_imgs(contains(dicom_imgs, 'EP2D_DIFF_DISCOR_PA'));
+        
+        dicom_imgs_cell = {dicom_imgs_forfunc_pa, dicom_imgs_forfunc_ap, dicom_imgs_fordwi_pa, dicom_imgs_fordwi_ap};
+        
+        for modal_i = 1:numel(dicom_imgs_cell)
+
+        dicm2nii(dicom_imgs_cell{modal_i}, outdir, 4, 'save_json');
+        out = load(fullfile(outdir, 'dcmHeaders.mat'));
+        f = fields(out.h);
+
+        cd(outdir);
+        nifti_3d = filenames([f{modal_i} '*.nii']);
+
+        [~, subj_id] = fileparts(PREPROC.subject_dir);
+        switch modal_i
+            case 1 % dicom_imgs_forfunc_pa
+                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_run-01_epi', subj_id));
+            case 2 % dicom_imgs_forfunc_ap
+                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_run-01_epi', subj_id));
+            case 3 % dicom_imgs_fordwi_pa
+                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_run-02_epi', subj_id));
+            case 4 % dicom_imgs_fordwi_ap
+                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_run-02_epi', subj_id));
+        end
+
+        disp('Converting 3d images to 4d images...')
+        spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
+
+        delete(fullfile(outdir, [f{modal_i} '*nii']))
+
+        % == change the json file name and save PREPROC
+        movefile(fullfile(outdir, [f{modal_i} '.json']), [output_4d_fnames '.json']);
+
+    end
     
     PREPROC.fmap_nii_files = filenames('sub*dir*.nii', 'absolute', 'char');
     
