@@ -127,6 +127,7 @@ for subj_i = 1:numel(subject_codes)
     system(['rm ' fullfile(outdir, 'dcmHeaders.mat')]);
     
     save_load_PREPROC(PREPROC.subject_dir, 'save', PREPROC); % save PREPROC
+    disp('Done');
 end
 
 end

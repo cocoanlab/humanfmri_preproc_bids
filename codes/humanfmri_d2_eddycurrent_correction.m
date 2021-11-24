@@ -1,14 +1,14 @@
-function PREPROC = humanfmri_d1_distortion_correction(preproc_subject_dir, epi_enc_dir)
+function PREPROC = humanfmri_d2_eddycurrent_correction(preproc_subject_dir, epi_enc_dir)
 
-% This function applies the distortion correction for diffusion data using fsl's topup.
+% This function applies the eddy current correction for diffusion data using fsl's eddy.
 %
 % :Usage:
 % ::
-%    PREPROC = humanfmri_d1_distortion_correction(preproc_subject_dir, epi_enc_dir, varargin)
+%    PREPROC = humanfmri_d2_eddycurrent_correction(preproc_subject_dir, epi_enc_dir, varargin)
 %
 %    e.g. 
 %       epi_enc_dir = 'ap';
-%       humanfmri_d1_distortion_correction(preproc_subject_dir, epi_enc_dir, varargin)
+%       humanfmri_d2_eddycurrent_correction(preproc_subject_dir, epi_enc_dir, varargin)
 %
 % :Input:
 % 
@@ -24,7 +24,7 @@ function PREPROC = humanfmri_d1_distortion_correction(preproc_subject_dir, epi_e
 % :Output:
 % ::
 %     PREPROC.dwi_distortion_correction_out          fmap combined
-%     PREPROC.dwi_distortion_correction_parameter    dc parameters
+%     PREPROC.dwi_distortion_correction_parameter    dc parameters    
 %     PREPROC.dwi_topup.topup_out
 %                      .topup_fieldout
 %                      .topup_unwarped               topup outputs
@@ -51,6 +51,7 @@ function PREPROC = humanfmri_d1_distortion_correction(preproc_subject_dir, epi_e
 
 %% add fsl path 
 setenv('PATH', [getenv('PATH') ':/usr/local/fsl/bin']);
+setenv('FSLOUTPUTTYPE','NIFTI_GZ');
 
 %% Load PREPROC
 for subj_i = 1:numel(preproc_subject_dir)
@@ -71,29 +72,29 @@ for subj_i = 1:numel(preproc_subject_dir)
     PREPROC.dwi_distortion_correction_out = fullfile(PREPROC.preproc_fmap_dir, [PREPROC.subject_code '_dc_combined_fordwi.nii']);
     
     if strcmpi(epi_enc_dir, 'ap')
-        system(['export FSLOUTPUTTYPE=NIFTI; fslmerge -t ', PREPROC.dwi_distortion_correction_out, ' ', distort_ap_dat, ' ', distort_pa_dat]);
+        system(['fslmerge -t ', PREPROC.dwi_distortion_correction_out, ' ', distort_ap_dat, ' ', distort_pa_dat]);
     elseif strcmpi(epi_enc_dir, 'pa')
-        system(['export FSLOUTPUTTYPE=NIFTI; fslmerge -t ', PREPROC.dwi_distortion_correction_out, ' ', distort_pa_dat, ' ', distort_ap_dat]);
+        system(['fslmerge -t ', PREPROC.dwi_distortion_correction_out, ' ', distort_pa_dat, ' ', distort_ap_dat]);
     end
     
     % calculate and write the distortion correction parameter
     
     fmap_hfile = fullfile(PREPROC.study_imaging_dir, 'disdaq_dcmheaders', PREPROC.subject_code, sprintf('%s_fmap_dcmheaders.mat', PREPROC.subject_code));
     dicomheader = load(fmap_hfile);
-    ap_readout = dicomheader.h.ep2d_diff_DisCor_AP.ReadoutSeconds;
-    pa_readout = dicomheader.h.ep2d_diff_DisCor_PA.ReadoutSeconds;
-    ap_vol = spm_vol(distort_ap_dat);
-    pa_vol = spm_vol(distort_pa_dat);
     
     dc_param = fullfile(PREPROC.preproc_fmap_dir, ['dc_param_', epi_enc_dir, '_fordwi.txt']);
     
     fileID = fopen(dc_param, 'w');
     if strcmpi(epi_enc_dir, 'ap')
-        distort_param_dat = [repmat([0 -1 0 ap_readout], numel(ap_vol), 1); ...
-            repmat([0 1 0 pa_readout], numel(pa_vol), 1)];
+        h2 = dicomheader.h.ep2d_diff_DisCor_AP;
+        h1 = dicomheader.h.ep2d_diff_DisCor_PA;
+        distort_param_dat = [repmat([0 -1 0 h1.ReadoutSeconds], h1.NumberOfTemporalPositions, 1); ...
+            repmat([0 1 0 h2.ReadoutSeconds], h2.NumberOfTemporalPositions, 1)];
     elseif strcmpi(epi_enc_dir, 'pa')
-        distort_param_dat = [repmat([0 1 0 pa_readout], numel(pa_vol), 1); ...
-            repmat([0 -1 0 ap_readout], numel(ap_vol), 1)];
+        h1 = dicomheader.h.ep2d_diff_DisCor_PA;
+        h2 = dicomheader.h.ep2d_diff_DisCor_AP;
+        distort_param_dat = [repmat([0 1 0 h1.ReadoutSeconds], h1.NumberOfTemporalPositions, 1); ...
+            repmat([0 -1 0 h2.ReadoutSeconds], h2.NumberOfTemporalPositions, 1)];
     end
     
     fprintf(fileID, repmat([repmat('%.4f\t', 1, size(distort_param_dat, 2)), '\n'], 1, size(distort_param_dat, 1)), distort_param_dat');
@@ -106,19 +107,16 @@ for subj_i = 1:numel(preproc_subject_dir)
     topup_out = fullfile(PREPROC.preproc_fmap_dir, 'topup_out_fordwi');
     topup_fieldout = fullfile(PREPROC.preproc_fmap_dir, 'topup_fieldout_fordwi');
     topup_unwarped = fullfile(PREPROC.preproc_fmap_dir, 'topup_unwarped_fordwi');
-    merged_vol = spm_vol(PREPROC.dwi_distortion_correction_out);
-    merged_dim = merged_vol(1).dim;
-    if any(mod(merged_dim, 2) == 1)
-        topup_config = '/usr/local/fsl/src/topup/flirtsch/b02b0_1.cnf'; % subsampling 1, takes longer
-    else
-        topup_config = '/usr/local/fsl/src/topup/flirtsch/b02b0.cnf';
-    end
-    system(['export FSLOUTPUTTYPE=NIFTI; topup --imain=', PREPROC.dwi_distortion_correction_out, ' --datain=', dc_param, ' --config=', topup_config, ' --out=', topup_out, ...
+    topup_config = '/usr/local/fsl/src/topup/flirtsch/b02b0.cnf';
+    system(['topup --imain=', PREPROC.dwi_distortion_correction_out, ' --datain=', dc_param, ' --config=', topup_config, ' --out=', topup_out, ...
         ' --fout=', topup_fieldout, ' --iout=', topup_unwarped]);
     
     PREPROC.dwi_topup.topup_out = topup_out;
     PREPROC.dwi_topup.topup_fieldout = topup_fieldout;
     PREPROC.dwi_topup.topup_unwarped = topup_unwarped;
+    
+    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' PREPROC.dwi_distortion_correction_out]);
+    system(['export FSLOUTPUTTYPE=NIFTI; fslchfiletype NIFTI ' PREPROC.dwi_topup.topup_unwarped '.nii.gz']);
     
     fprintf('Take snapshot of fieldmap images before/after TOPUP.\n');
     if strcmpi(epi_enc_dir, 'ap')
