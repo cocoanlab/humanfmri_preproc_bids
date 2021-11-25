@@ -165,13 +165,15 @@ for subj_i = 1:numel(preproc_subject_dir)
     if strcmpi(epi_enc_dir, 'ap')
         topup_unwarped_png{1} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-ap_epi.png');
         topup_unwarped_png{2} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-pa_epi.png');
+        topup_figidx = {[1:numel(ap_vol)]', [1:numel(pa_vol)]' + numel(ap_vol)};
     elseif  strcmpi(epi_enc_dir, 'pa')
         topup_unwarped_png{1} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-pa_epi.png');
         topup_unwarped_png{2} = fullfile(PREPROC.qcdir, 'topup_unwarped_dir-ap_epi.png');
+        topup_figidx = {[1:numel(pa_vol)]', [1:numel(ap_vol)]' + numel(pa_vol)};
     end
     for top_i = 1:numel(topup_unwarped_png)
-        topup_before_list = cellstr(strcat(PREPROC.distortion_correction_out, ',', num2str([2*top_i-1;2*top_i])));
-        topup_after_list = cellstr(strcat([PREPROC.topup.topup_unwarped '.nii'], ',', num2str([2*top_i-1;2*top_i])));
+        topup_before_list = cellstr(strcat(PREPROC.distortion_correction_out, ',', num2str(topup_figidx{top_i})));
+        topup_after_list = cellstr(strcat([PREPROC.topup.topup_unwarped '.nii'], ',', num2str(topup_figidx{top_i})));
         canlab_preproc_show_montage([topup_before_list; topup_after_list], topup_unwarped_png{top_i});
         drawnow;
     end
