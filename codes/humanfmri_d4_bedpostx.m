@@ -53,13 +53,20 @@ for subj_i = 1:numel(preproc_subject_dir)
     [~,a] = fileparts(preproc_subject_dir{subj_i});
     print_header('bedpostx', a);
     
-    PREPROC.dwi_bedpostx_dir = fullfile(PREPROC.preproc_dwi_dir, 'bedpostx');
+    PREPROC.dwi_bedpostx_dir = fullfile(PREPROC.preproc_dwi_dir, 'bpxdir');
     if ~exist(PREPROC.dwi_bedpostx_dir, 'dir'), mkdir(PREPROC.dwi_bedpostx_dir); end
-    copyfile([PREPROC.dwi_eddy.eddy_out '.nii'], fullfile(PREPROC.dwi_bedpostx_dir, 'data.nii'));
+    copyfile(PREPROC.dwi_cleaned_nii_file, fullfile(PREPROC.dwi_bedpostx_dir, 'data.nii'));
     copyfile(PREPROC.dwi_eddy.brainmask, fullfile(PREPROC.dwi_bedpostx_dir, 'nodif_brain_mask.nii'));
     copyfile(PREPROC.dwi_bvec_files{1}, fullfile(PREPROC.dwi_bedpostx_dir, 'bvecs'));
     copyfile(PREPROC.dwi_bval_files{1}, fullfile(PREPROC.dwi_bedpostx_dir, 'bvals'));
     
+    system(['export FSLOUTPUTTYPE=NIFTI;' ...
+        ' bedpostx' ...
+        ' ' PREPROC.dwi_bedpostx_dir...
+        ' --in=' PREPROC.dwi_FA_file ...
+        ' --warp=' PREPROC.merged_DWItoMNI ...
+        ' --rel' ...
+        ' --out=' PREPROC.dwi_FA_normalized_file]);
     system(['export FSLOUTPUTTYPE=NIFTI; bedpostx ' PREPROC.dwi_bedpostx_dir]);
     
     PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC);

@@ -57,9 +57,9 @@ for subj_i = 1:numel(preproc_subject_dir)
     print_header('eddy correction', a);
     
     PREPROC.dwi_eddy.meanfmap = fullfile(PREPROC.preproc_dwi_dir, 'eddy_mean.nii');
-    PREPROC.dwi_eddy.brainmask = fullfile(PREPROC.preproc_dwi_dir, [PREPROC.subject_code '_eddy_mean_mask.nii']);
-    system(['export FSLOUTPUTTYPE=NIFTI; fslmaths ', [PREPROC.dwi_topup.topup_unwarped '.nii'], ' -Tmean ', temp_mean]);
-    system(['export FSLOUTPUTTYPE=NIFTI; bet ', PREPROC.dwi_eddy.meanfmap, ' ', PREPROC.dwi_eddy.meanfmap, ' -n -m -f 0.5']);
+    PREPROC.dwi_eddy.brainmask = fullfile(PREPROC.preproc_dwi_dir, 'eddy_mean_mask.nii');
+    system(['export FSLOUTPUTTYPE=NIFTI; fslmaths ', [PREPROC.dwi_topup.topup_unwarped '.nii'], ' -Tmean ', PREPROC.dwi_eddy.meanfmap]);
+    system(['export FSLOUTPUTTYPE=NIFTI; bet ', PREPROC.dwi_eddy.meanfmap, ' ', PREPROC.dwi_eddy.meanfmap, ' -n -m -f 0.3']);
     dwi_vol = spm_vol(PREPROC.dwi_nii_files{1});
     PREPROC.dwi_eddy_correction_idxfile = fullfile(PREPROC.preproc_dwi_dir, 'eddy_idx.txt');
     writematrix(ones(1, numel(dwi_vol)), PREPROC.dwi_eddy_correction_idxfile, 'Delimiter', ' ');
@@ -75,6 +75,17 @@ for subj_i = 1:numel(preproc_subject_dir)
         ' --topup=' PREPROC.dwi_topup.topup_out ...
         ' --out=' PREPROC.dwi_eddy.eddy_out ...
         ' --data_is_shelled']); % assumes multishell data
+    PREPROC.dwi_cleaned_nii_file = [PREPROC.dwi_eddy.eddy_out '.nii'];
+    
+    eddy_quad <eddy_output_basename> -idx <eddy_index_file> -par <eddy_acqparams_file> -m <nodif_mask> -b <bvals>
+    system(['export FSLOUTPUTTYPE=NIFTI;' ...
+        ' eddy_quad' ...
+        ' ' PREPROC.dwi_eddy.eddy_out ...
+        ' -idx ' PREPROC.dwi_eddy_correction_idxfile ...
+        ' -par ' PREPROC.dwi_distortion_correction_parameter ...
+        ' -m ' PREPROC.dwi_eddy.brainmask ...
+        ' -b ' PREPROC.dwi_bval_files{1}]); % assumes multishell data
+    open(fullfile([PREPROC.dwi_eddy.eddy_out '.qc'], 'qc.pdf'));
     
     PREPROC = save_load_PREPROC(preproc_subject_dir{subj_i}, 'save', PREPROC);
 end
