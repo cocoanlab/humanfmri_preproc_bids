@@ -18,7 +18,7 @@ function PREPROC = humanfmri_d4_bedpostx(preproc_subject_dir)
 %
 % :Output:
 % ::  
-%     PREPROC.dwi_dtifit.dtifit_out                  dtifit outputs
+%     PREPROC.dwi_bedpostx_dir                       bedpostx output directory
 %     
 %
 % ..
@@ -53,12 +53,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     [~,a] = fileparts(preproc_subject_dir{subj_i});
     print_header('bedpostx', a);
     
-    PREPROC.dwi_bedpostx_dir = fullfile(PREPROC.preproc_dwi_dir, 'bpxdir');
-    if ~exist(PREPROC.dwi_bedpostx_dir, 'dir'), mkdir(PREPROC.dwi_bedpostx_dir); end
-    copyfile(PREPROC.dwi_cleaned_nii_file, fullfile(PREPROC.dwi_bedpostx_dir, 'data.nii'));
-    copyfile(PREPROC.dwi_eddy.brainmask, fullfile(PREPROC.dwi_bedpostx_dir, 'nodif_brain_mask.nii'));
-    copyfile(PREPROC.dwi_bvec_files{1}, fullfile(PREPROC.dwi_bedpostx_dir, 'bvecs'));
-    copyfile(PREPROC.dwi_bval_files{1}, fullfile(PREPROC.dwi_bedpostx_dir, 'bvals'));
+    bpxdir = fullfile(PREPROC.preproc_dwi_dir, 'bpxdir');
+    if ~exist(bpxdir, 'dir'), mkdir(bpxdir); end
+    copyfile(PREPROC.dwi_cleaned_nii_file, fullfile(bpxdir, 'data.nii'));
+    copyfile(PREPROC.dwi_eddy.brainmask, fullfile(bpxdir, 'nodif_brain_mask.nii'));
+    copyfile(PREPROC.dwi_bvec_files{1}, fullfile(bpxdir, 'bvecs'));
+    copyfile(PREPROC.dwi_bval_files{1}, fullfile(bpxdir, 'bvals'));
+    PREPROC.dwi_bedpostx_dir = fullfile(PREPROC.preproc_dwi_dir, 'bpxdir.bedpostX');
     
     system(['export FSLOUTPUTTYPE=NIFTI; bedpostx ' PREPROC.dwi_bedpostx_dir]);
     
