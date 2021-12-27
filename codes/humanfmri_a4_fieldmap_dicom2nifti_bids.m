@@ -120,32 +120,34 @@ for subj_i = 1:numel(subject_codes)
         
         for modal_i = 1:numel(dicom_imgs_cell)
 
-        dicm2nii(dicom_imgs_cell{modal_i}, outdir, 4, 'save_json');
-        out = load(fullfile(outdir, 'dcmHeaders.mat'));
-        f = fields(out.h);
+            dicm2nii(dicom_imgs_cell{modal_i}, outdir, 4, 'save_json');
+            out = load(fullfile(outdir, 'dcmHeaders.mat'));
+            f = fields(out.h);
 
-        cd(outdir);
-        nifti_3d = filenames([f{modal_i} '*.nii']);
+            cd(outdir);
+            nifti_3d = filenames([f{modal_i} '*.nii']);
 
-        [~, subj_id] = fileparts(PREPROC.subject_dir);
-        switch modal_i
-            case 1 % dicom_imgs_forfunc_pa
-                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_run-01_epi', subj_id));
-            case 2 % dicom_imgs_forfunc_ap
-                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_run-01_epi', subj_id));
-            case 3 % dicom_imgs_fordwi_pa
-                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_run-02_epi', subj_id));
-            case 4 % dicom_imgs_fordwi_ap
-                output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_run-02_epi', subj_id));
+            [~, subj_id] = fileparts(PREPROC.subject_dir);
+            switch modal_i
+                case 1 % dicom_imgs_forfunc_pa
+                    output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_run-01_epi', subj_id));
+                case 2 % dicom_imgs_forfunc_ap
+                    output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_run-01_epi', subj_id));
+                case 3 % dicom_imgs_fordwi_pa
+                    output_4d_fnames = fullfile(outdir, sprintf('%s_dir-pa_run-02_epi', subj_id));
+                case 4 % dicom_imgs_fordwi_ap
+                    output_4d_fnames = fullfile(outdir, sprintf('%s_dir-ap_run-02_epi', subj_id));
+            end
+
+            disp('Converting 3d images to 4d images...')
+            spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
+
+            delete(fullfile(outdir, [f{modal_i} '*nii']))
+
+            % == change the json file name and save PREPROC
+            movefile(fullfile(outdir, [f{modal_i} '.json']), [output_4d_fnames '.json']);
+
         end
-
-        disp('Converting 3d images to 4d images...')
-        spm_file_merge(nifti_3d, [output_4d_fnames '.nii']);
-
-        delete(fullfile(outdir, [f{modal_i} '*nii']))
-
-        % == change the json file name and save PREPROC
-        movefile(fullfile(outdir, [f{modal_i} '.json']), [output_4d_fnames '.json']);
 
     end
     
