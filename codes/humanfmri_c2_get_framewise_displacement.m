@@ -204,7 +204,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             
         end
         set(gcf, 'color', 'w');
-        subtitle(char(['FrameWise Displacement: ' PREPROC.subject_code]));
+        sgtitle(char(['FrameWise Displacement: ' PREPROC.subject_code]));
         figdir = PREPROC.qcdir;
         graphwrite = fullfile(figdir, sprintf('FrameWise_Power_sub%s.png', PREPROC.subject_code(end-2:end)));
         % pagesetup(gcf);
