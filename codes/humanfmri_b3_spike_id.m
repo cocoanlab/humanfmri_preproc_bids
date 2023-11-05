@@ -90,7 +90,7 @@ for subj_i = 1:numel(preproc_subject_dir)
             saveas(gcf,qcspikefilename);
             
             uout = unique(dat.covariates','rows','stable'); % Suhwan added (Nov 5, 2023): delete duplicate columns (RMSSD and mahalanobis distance)
-            PREPROC.nuisance.spike_covariates{run_i} = uout; % the first one is global signal, that I don't need.
+            PREPROC.nuisance.spike_covariates{run_i} = uout'; % the first one is global signal, that I don't need.
         end
     end
 
