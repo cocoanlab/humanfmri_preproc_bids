@@ -89,7 +89,8 @@ for subj_i = 1:numel(preproc_subject_dir)
             qcspikefilename = fullfile(PREPROC.qcdir, ['qc_spike_plot_' a '.png']); % Scott added some lines to actually save the spike images
             saveas(gcf,qcspikefilename);
             
-            PREPROC.nuisance.spike_covariates{run_i} = dat.covariates; % the first one is global signal, that I don't need.
+            uout = unique(dat.covariates','rows','stable'); % Suhwan added (Nov 5, 2023): delete duplicate columns (RMSSD and mahalanobis distance)
+            PREPROC.nuisance.spike_covariates{run_i} = uout; % the first one is global signal, that I don't need.
         end
     end
 
