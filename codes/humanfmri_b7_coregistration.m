@@ -52,6 +52,7 @@ function PREPROC = humanfmri_b7_coregistration(preproc_subject_dir, use_sbref, v
 
 do_check = true;
 use_dc = true;
+use_ss = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -60,6 +61,8 @@ for i = 1:length(varargin)
                 do_check = false;
             case {'no_dc'}
                 use_dc = false;
+            case {'skullstrip'}
+                use_ss = true;
         end
     end
 end
@@ -78,6 +81,13 @@ for subj_i = 1:numel(preproc_subject_dir)
     copyfile(PREPROC.anat_nii_files{1}, PREPROC.preproc_anat_dir);
     
     PREPROC.coreg_anat_file = fullfile(PREPROC.preproc_anat_dir, [c '.nii']);
+    if use_ss
+        anat_vol = spm_vol(PREPROC.coreg_anat_file);
+        anat_dat = spm_read_vols(anat_vol);
+        disp('FSL BET is working for skullstripping on T1w');
+        system(sprintf('export FSLOUTPUTTYPE=NIFTI; bet %s %s -f 0.3', ...
+            PREPROC.coreg_anat_file, PREPROC.coreg_anat_file));
+    end
     
     def = spm_get_defaults('coreg');
     
@@ -103,6 +113,10 @@ for subj_i = 1:numel(preproc_subject_dir)
     spm('defaults','fmri');
     spm_jobman('initcfg');
     spm_jobman('run', {matlabbatch});
+
+    if use_ss
+        spm_write_vol(spm_vol(PREPROC.coreg_anat_file), anat_dat);
+    end
     
     save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC
     
