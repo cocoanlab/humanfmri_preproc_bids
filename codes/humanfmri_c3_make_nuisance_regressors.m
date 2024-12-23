@@ -1,12 +1,4 @@
-% ========================================================= %
-%                   Possible combinations                   %
-% --------------------------------------------------------- %
-% 1. 24 parameter + spike covatiates + linear drift         %
-% 2. 24 parameter + spike covariates + WM and CSF + linear  %
-% drfit                                                     %
-% 3. linear drift                                           %
-% ========================================================= %
-function humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,varargin)
+function humanfmri_c3_make_nuisance_regressors_test(preproc_subject_dir,varargin)
 
 % This funtion is for making and saving nuisance mat files using PREPROC
 % files.
@@ -22,16 +14,23 @@ function humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,varargin)
 % :Optional input
 % ::
 %   - 'regressors': parameter you want to include
-%                   (defaults: 'regressors','{'24Move','Spike','WM_CSF'};)
+%                   (defaults: 'regressors','{'24Move','Spike','WM_CSF','linear'};)
 %                   -> lists of regressors
 %                       1. {24Move}: 24 movement parameters
 %                       2. {Spike} : spike covariates
-%                       3. {WM_CSF}: WM and CSF
+%                       3. {WM_CSF}: top 5PCs of WM and CSF
+%                       4. {mean_WM_CSF}: mean signal of WM and CSF
+%                       5. {linear}: linear drift
 %
 %   - 'img': if you want to estimate WM and CSF in specific imgs, you can
 %            specify field name in PREPROC struture
 %           (defaults: 'img','swr_func_bold_files' )
 %
+%   - 'custom_mask': if you want to use specific masks for WM and CSF extraction, 
+%            you can specify mask directories in a cell (in order of gray matter, white
+%            matter, and ventricle/CSF)
+%           (defaults: ,'gray_matter_mask.nii', 'canonical_white_matter_thrp5_ero1.nii',...
+%           'canonical_ventricles_thrp5_ero1.nii')
 %
 % :Output:
 % ::
@@ -69,8 +68,14 @@ function humanfmri_c3_make_nuisance_regressors(preproc_subject_dir,varargin)
 do_24params = false;
 do_spike_covariates = false;
 do_wm_csf = false;
-reg_idx = {'24Move','Spike','WM_CSF'}; % defaults
+do_linear = false;
+do_mean_wm_csf = false;
 
+
+reg_idx = {'24Move','Spike','WM_CSF','linear'}; % defaults
+mask = {'gray_matter_mask.nii', 'canonical_white_matter_thrp5_ero1.nii', ...
+                'canonical_ventricles_thrp5_ero1.nii'};
+            
 do_specify_img = false;
 fieldname = 'swr_func_bold_files';
 for i = 1:numel(varargin)
@@ -81,6 +86,8 @@ for i = 1:numel(varargin)
             case {'img'}
                 fieldname = varargin{i+1};
                 do_specify_img = true;
+            case {'custom_mask'}
+                mask = varargin{i+1};
         end
     end
 end
@@ -104,7 +111,13 @@ for subj_i = 1:numel(preproc_subject_dir)
                 disp('- Spike covariates');
             case {'WM_CSF','WMCSF','WhiteMatter_CSF'}
                 do_wm_csf = true;
-                disp('- White Matter and CSF');
+                disp('- Top 5 PCs of white matter and CSF');
+            case {'mean_WM_CSF','mean_wm_csf'}
+                do_mean_wm_csf = true;
+                disp('- Mean signal of white matter and CSF');         
+            case {'linear','Linear'}
+                do_linear = true;
+                disp('- Linear drift');
         end
     end
     disp('----------------------------------------------');
@@ -136,35 +149,35 @@ for subj_i = 1:numel(preproc_subject_dir)
             R = [R  PREPROC.nuisance.spike_covariates{img_i}];
         end
         
-        % 3. extract and add WM(value2)_CSF(value3)
-        if do_wm_csf
-            
-            if do_specify_img
-                eval(['images_by_run = PREPROC.' fieldname]);
-            else %defaults
-                images_by_run = PREPROC.swr_func_bold_files;
-            end
-            
-            [~,img_name]=fileparts(images_by_run{img_i});
-            disp(['Img File name: ' img_name]);
-            
-            [~, components] = extract_gray_white_csf(fmri_data(images_by_run{img_i}), 'masks', ...
-                {'gray_matter_mask.nii', 'canonical_white_matter_thrp5_ero1.nii', ...
-                'canonical_ventricles_thrp5_ero1.nii'});
-            
-            R = [R scale(double(components{2})) scale(double(components{3}))];
+        % extract and add WM(value2)_CSF(value3)
+        if do_specify_img
+            eval(['images_by_run = PREPROC.' fieldname]);
+        else %defaults
+            images_by_run = PREPROC.swr_func_bold_files;
         end
         
-        % 4. finally, add linear drift
-        R = [R zscore((1:size(R,1))')];
+        [~,img_name]=fileparts(images_by_run{img_i});
+        disp(['Img File name: ' img_name]);
         
-        % 5. Save
+        [mean_value, components] = extract_gray_white_csf(fmri_data(images_by_run{img_i}), 'masks', mask);
+        
+        if do_wm_csf  % 3. PCs of WM_CSF
+            R = [R scale(double(components{2})) scale(double(components{3}))];
+        elseif do_mean_wm_csf  % 4. mean signal of WM_CSF
+            R = [R scale(mean_value(:,[2 3]))];
+        end
+        
+        % 5. add linear drift
+        if do_linear
+            R = [R zscore((1:size(R,1))')];
+        end
+        
+        %  Save
         savename{img_i} = fullfile(nuisance_dir, sprintf('nuisance_run%d.mat', img_i));
         fprintf('\nsaving... %s\n\n', savename{img_i});
         save(savename{img_i}, 'R');
         
     end
-    reg_idx{length(reg_idx)+1} = 'linear drift';
     
     % Save PROPROC
     PREPROC.nuisance_descriptions = reg_idx;
