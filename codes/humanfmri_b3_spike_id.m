@@ -107,10 +107,9 @@ for subj_i = 1:numel(preproc_subject_dir)
         diary_txt_fnames = filenames(fullfile(PREPROC.qcdir, 'qc_diary*txt'));
 
         for run_i = 1:numel(diary_txt_fnames)
-            % diary_temp = importdata(diary_txt_fnames{run_i}, ' ');
-
-            text = fileread(diary_txt_fnames{run_i}); % 파일의 전체 내용을 하나의 문자열로 읽기
-            pattern = '\d+\.?\d*'; % 정규식: 정수 또는 소수점 포함 숫자
+            
+            text = fileread(diary_txt_fnames{run_i});
+            pattern = '\d+\.?\d*'; 
             numericMatrix = cellfun(@str2double, regexp(text, pattern, 'match'));
             numericDat = unique(numericMatrix, 'stable');
 
